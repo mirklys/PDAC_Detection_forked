@@ -31,6 +31,7 @@ conda activate pdac
 
 - Install dependencies
 ```
+git clone https://github.com/han-liu/PDAC_Detection.git
 cd PDAC_Detection
 pip install -r requirements.txt
 
@@ -69,17 +70,43 @@ export nnUNet_preprocessed="./workspace/nnUNet_preprocessed"
 export nnUNet_results="./workspace/nnUNet_results"
 ```
 
-- How to run?
+- Test our model with the following command:
 ```
 python main.py -i ${INPUT_DIR} -o ${OUTPUT_DIR} --inv_alpha ${INV_ALPHA}
 ```
+Where:
 
-- For a quick test with the example testing image:
+- `${INPUT_DIR}`  is the directory containing your input images (e.g., nii.gz, mhd, mha, etc).
+- `${OUTPUT_DIR}` is the directory where the model prediction will be saved.
+- `${INV_ALPHA}`  controls the expansion of the predicted lesion (larger values predict larger lesions); defaults to `15`.
+
+- For a quick test using the example testing images, run:
 ```
 python main.py -i ./workspace/test_example/input -o ./workspace/test_example/output
 ```
-`inv_alpha` controls the expansion of the predicted lesion. Larger `inv_alpha` will predict larger lesions. Defaults to `15`.
 
+- What are the outputs?
+(1) PDAC detection map (ranging from 0-1) where each predicted lesion is assigned a confidence score.
+(2) Patient-level likelihood score (computed as the **maximum** value of the detection map)
+
+The PDAC detection maps are saved under `${OUTPUT_DIR}/pdac-detection-map` with the following directory structure:
+```
+├── ${OUTPUT_DIR}/
+    ├── pdac-likelihood.json
+    └── pdac-detection-map/
+        ├── filename1.nii.gz
+        ├── filename2.nii.gz
+        └── ...
+```
+
+The `pdac-likelihood.json` contains the likelihood scores for each patient. For exmaple:
+```
+{
+    "filename1": 0.9965946078300476,
+    "filename2": 0.9977765679359436,
+    ...
+}
+```
 
 ### Acknowledgement
 This code is built upon the following works. We gratefully acknowledge their contribution and encourage users to cite their original work:
