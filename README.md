@@ -45,7 +45,7 @@ cd ../report-guided-annotation
 pip install -e .
 ```
 
-#### Download the our models and example testing images [here](https://drive.google.com/drive/folders/1RpbofQDrQNzwfYjFhQYRRWCN8HhIoZQP?usp=sharing)
+#### Download the our models and example testing images [[click to download]](https://drive.google.com/drive/folders/1RpbofQDrQNzwfYjFhQYRRWCN8HhIoZQP?usp=sharing)
 ```
 PDAC_Detection/
 └── workspace/
