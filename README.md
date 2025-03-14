@@ -1,9 +1,11 @@
-# AI-assisted PDAC Detection 
+# AI-assisted Pancreatic Ductal Adenocarcinoma Detection 
 [![arXiv](https://img.shields.io/badge/preprint-2311.12437-blue)](https://arxiv.org/abs/2503.10068) [![cite](https://img.shields.io/badge/cite-BibTex-red)](xx) [![leaderboard](https://img.shields.io/badge/Leaderboard-BibTex-yellow)](https://panorama.grand-challenge.org/evaluation/testing-phase/leaderboard/) [![website](https://img.shields.io/badge/Challenge%20website-50d13d)](https://panorama.grand-challenge.org/)
 
 **This is the implementation for Team DTI's :trophy: 1st place solution in the PANORAMA Challenge.**
 
-[AI-assisted Early Detection of Pancreatic Ductal Adenocarcinoma on Contrast-enhanced CT](https://arxiv.org/abs/2503.10068)
+Paper: [AI-assisted Early Detection of Pancreatic Ductal Adenocarcinoma on Contrast-enhanced CT](https://arxiv.org/abs/2503.10068)
+
+<p align="center"><img src="https://github.com/han-liu/PDAC_Detection/blob/main/assets/gt_vs_pred.png" alt="gt_vs_pred" width="550"/></p>
 
 If you find our code/paper helpful for your research, please kindly consider citing our work:
 ```
@@ -39,7 +41,7 @@ cd ../report-guided-annotation
 pip install -e .
 ```
 
-- Download the workspace folder [here](https://drive.google.com/drive/folders/1RpbofQDrQNzwfYjFhQYRRWCN8HhIoZQP?usp=sharing): pretrained model weights and an example testing image 
+- Download the workspace folder [here](https://drive.google.com/drive/folders/1RpbofQDrQNzwfYjFhQYRRWCN8HhIoZQP?usp=sharing). It includes our pretrained models and an example testing image. 
 
 ### Inference
 - Set up environment variables for nnU-Net
@@ -54,11 +56,11 @@ export nnUNet_results="./workspace/nnUNet_results"
 python main.py -i ${INPUT_DIR} -o ${OUTPUT_DIR} --inv_alpha ${INV_ALPHA}
 ```
 
-- We prepare an testing example in workspace/test_example [here](https://drive.google.com/drive/folders/1rc6gDp8pGPEFusYyQfDBeJC08rmvwZTE?usp=sharing). For a quick test:
+- For a quick test with the example testing image:
 ```
 python main.py -i ./workspace/test_example/input -o ./workspace/test_example/output
 ```
-inv_alpha controls the expansion of the predicted lesion. Larger inv_alpha will predict larger lesions. Defaults to 15.
+`inv_alpha` controls the expansion of the predicted lesion. Larger `inv_alpha` will predict larger lesions. Defaults to `15`.
 
 
 ### Acknowledgement
