@@ -60,30 +60,30 @@ PDAC_Detection/
 ```
 
 ### Inference
-- Set up environment variables for nnU-Net
+#### Set up environment variables for nnU-Net
 ```
 export nnUNet_raw="./workspace/nnUNet_raw"
 export nnUNet_preprocessed="./workspace/nnUNet_preprocessed"
 export nnUNet_results="./workspace/nnUNet_results"
 ```
 
-- Test our model with the following command:
+#### Test our model with the following command:
 ```
 python main.py -i ${INPUT_DIR} -o ${OUTPUT_DIR} --inv_alpha ${INV_ALPHA}
 ```
-    Where:
-    - `${INPUT_DIR}`  is the directory containing your input images (e.g., nii.gz, mhd, mha, etc).
-    - `${OUTPUT_DIR}` is the directory where the model prediction will be saved.
-    - `${INV_ALPHA}`  controls the expansion of the predicted lesion (larger values predict larger lesions); default=`15`.
+where:
+- `${INPUT_DIR}`  is the directory containing your input images (e.g., nii.gz, mhd, mha, etc).
+- `${OUTPUT_DIR}` is the directory where the prediction will be saved.
+- `${INV_ALPHA}`  controls the expansion of the predicted lesion (larger values predict larger lesions); default=`15`.
 
-- For a quick test using the example testing images, run:
+#### For a quick test using the example testing images, run:
 ```
 python main.py -i ./workspace/test_example/input -o ./workspace/test_example/output
 ```
 
-- What are the outputs?
-(1) PDAC detection map (ranging from 0-1) where each predicted lesion is assigned a confidence score.
-(2) Patient-level likelihood score (computed as the **maximum** value of the detection map)
+#### What are the outputs?
+- PDAC detection map (ranging from 0-1) where each predicted lesion is assigned a confidence score.
+- Patient-level likelihood score (computed as the **maximum** value of the detection map)
 
 The PDAC detection maps are saved under `${OUTPUT_DIR}/pdac-detection-map`:
 ```
