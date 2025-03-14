@@ -5,7 +5,7 @@
 
 Paper: [AI-assisted Early Detection of Pancreatic Ductal Adenocarcinoma on Contrast-enhanced CT](https://arxiv.org/abs/2503.10068)
 
-<p align="center"><img src="https://github.com/han-liu/PDAC_Detection/blob/main/assets/gt_vs_pred.png" alt="gt_vs_pred" width="550"/></p>
+<p align="center"><img src="https://github.com/han-liu/PDAC_Detection/blob/main/assets/gt_vs_pred.png" alt="gt_vs_pred" width="650"/></p>
 
 If you find our code/paper helpful for your research, please kindly consider citing our work:
 ```
