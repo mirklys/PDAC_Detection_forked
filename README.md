@@ -71,11 +71,10 @@ export nnUNet_results="./workspace/nnUNet_results"
 ```
 python main.py -i ${INPUT_DIR} -o ${OUTPUT_DIR} --inv_alpha ${INV_ALPHA}
 ```
-Where:
-
-- `${INPUT_DIR}`  is the directory containing your input images (e.g., nii.gz, mhd, mha, etc).
-- `${OUTPUT_DIR}` is the directory where the model prediction will be saved.
-- `${INV_ALPHA}`  controls the expansion of the predicted lesion (larger values predict larger lesions); default=`15`.
+    Where:
+    - `${INPUT_DIR}`  is the directory containing your input images (e.g., nii.gz, mhd, mha, etc).
+    - `${OUTPUT_DIR}` is the directory where the model prediction will be saved.
+    - `${INV_ALPHA}`  controls the expansion of the predicted lesion (larger values predict larger lesions); default=`15`.
 
 - For a quick test using the example testing images, run:
 ```
@@ -83,10 +82,10 @@ python main.py -i ./workspace/test_example/input -o ./workspace/test_example/out
 ```
 
 - What are the outputs?
-    - (1) PDAC detection map (ranging from 0-1) where each predicted lesion is assigned a confidence score.
-    - (2) Patient-level likelihood score (computed as the **maximum** value of the detection map)
+(1) PDAC detection map (ranging from 0-1) where each predicted lesion is assigned a confidence score.
+(2) Patient-level likelihood score (computed as the **maximum** value of the detection map)
 
-The PDAC detection maps are saved under `${OUTPUT_DIR}/pdac-detection-map` as follows:
+The PDAC detection maps are saved under `${OUTPUT_DIR}/pdac-detection-map`:
 ```
 ├── ${OUTPUT_DIR}/
     ├── pdac-likelihood.json
@@ -96,7 +95,7 @@ The PDAC detection maps are saved under `${OUTPUT_DIR}/pdac-detection-map` as fo
         └── ...
 ```
 
-The `pdac-likelihood.json` contains the likelihood scores for each patient. For exmaple:
+The `pdac-likelihood.json` contains the likelihood scores for each patient:
 ```
 {
     "filename1": 0.9965946078300476,
