@@ -41,7 +41,25 @@ cd ../report-guided-annotation
 pip install -e .
 ```
 
-- Download the workspace folder [here](https://drive.google.com/drive/folders/1RpbofQDrQNzwfYjFhQYRRWCN8HhIoZQP?usp=sharing). It includes our pretrained models and an example testing image. 
+- Download the `workspace` folder [here](https://drive.google.com/drive/folders/1RpbofQDrQNzwfYjFhQYRRWCN8HhIoZQP?usp=sharing). It includes our pretrained models and an example testing image. 
+
+### Data preparation
+Once the `workspace` folder is downloaded, the directory tree will be:
+```
+PDAC_Detection/
+└── workspace/
+    ├── nnUNet_raw
+    ├── nnUNet_preprocessed
+    └── nnUNet_results/
+        ├── Dataset103_PANORAMA_baseline_Pancreas_Segmentation
+        └── Dataset107_PDAC_Detection
+    └── test_example/
+            ├── output
+            └── input
+                ├── filename1.nii.gz
+                ├── filename2.mha
+                └── ...
+```
 
 ### Inference
 - Set up environment variables for nnU-Net
