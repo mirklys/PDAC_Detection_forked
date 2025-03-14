@@ -1,7 +1,7 @@
 # AI-assisted Pancreatic Ductal Adenocarcinoma Detection 
 [![arXiv](https://img.shields.io/badge/preprint-2311.12437-blue)](https://arxiv.org/abs/2503.10068) [![cite](https://img.shields.io/badge/cite-BibTex-red)](xx) [![leaderboard](https://img.shields.io/badge/Leaderboard-BibTex-yellow)](https://panorama.grand-challenge.org/evaluation/testing-phase/leaderboard/) [![website](https://img.shields.io/badge/Challenge%20website-50d13d)](https://panorama.grand-challenge.org/)
 
-**This is the implementation for Team DTI's :trophy: 1st place solution in the PANORAMA Challenge.**
+## This is the implementation for Team DTI's :trophy: 1st place solution in the PANORAMA Challenge.##
 
 Paper: [AI-assisted Early Detection of Pancreatic Ductal Adenocarcinoma on Contrast-enhanced CT](https://arxiv.org/abs/2503.10068)
 
@@ -48,14 +48,14 @@ Once the `workspace` folder is downloaded, the directory tree will be:
 ```
 PDAC_Detection/
 └── workspace/
-    ├── nnUNet_raw
-    ├── nnUNet_preprocessed
+    ├── nnUNet_raw/
+    ├── nnUNet_preprocessed/
     └── nnUNet_results/
-        ├── Dataset103_PANORAMA_baseline_Pancreas_Segmentation
-        └── Dataset107_PDAC_Detection
+        ├── Dataset103_PANORAMA_baseline_Pancreas_Segmentation/
+        └── Dataset107_PDAC_Detection/
     └── test_example/
-            ├── output
-            └── input
+            ├── output/
+            └── input/
                 ├── filename1.nii.gz
                 ├── filename2.mha
                 └── ...
