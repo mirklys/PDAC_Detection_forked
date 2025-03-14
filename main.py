@@ -8,7 +8,9 @@ import json
 import SimpleITK as sitk
 import subprocess
 import time
+import shutil
 import warnings
+from report_guided_annotation.extract_lesion_candidates import extract_lesion_candidates
 warnings.filterwarnings("ignore")
 
 
@@ -20,6 +22,13 @@ def get_args_parser():
     parser.add_argument(      "--inv_alpha",   type=int, default=15, help="parameter to control the expansion of the lesion")
     args = parser.parse_args()
     return args
+
+
+def get_file_extension(image_fp):
+    base, ext = osp.splitext(image_fp)
+    if ext == ".gz" and base.endswith(".nii"):
+        return ".nii.gz"
+    return ext
 
 
 def resample_img(itk_image, out_spacing=[2.0, 2.0, 2.0], is_label=False, out_size = [], out_origin = [], out_direction= []):
@@ -53,64 +62,66 @@ def downsample_panorama_dataset(img_dir, img_save_dir, resample=(4.5, 4.5, 9.0))
     assert osp.exists(img_dir), f'image directory does not exist: {img_dir}'
     if not osp.exists(img_save_dir):
         os.mkdir(img_save_dir)
-    img_paths = sorted(glob(img_dir + '/*.mha'))
+    img_paths = sorted(glob(img_dir + '/*.*'))
     if len(img_paths) == 0:
-        print('No mha images found in input directory')
-    # with tqdm(total=len(img_paths)) as pbar:
-    for img_path in img_paths:
-        itk_img = sitk.ReadImage(img_path, sitk.sitkFloat32)
-        image_resampled = resample_img(itk_img, resample, is_label=False, out_size = [])
-        sitk.WriteImage(image_resampled, osp.join(img_save_dir, osp.basename(img_path).replace('.mha', '_0000.nii.gz')))
-        # pbar.update(1)
+        print('No images found in input directory')
+    with tqdm(total=len(img_paths)) as pbar:
+        for img_path in img_paths:
+            ext = get_file_extension(img_path)
+            itk_img = sitk.ReadImage(img_path, sitk.sitkFloat32)
+            image_resampled = resample_img(itk_img, resample, is_label=False, out_size = [])
+            sitk.WriteImage(image_resampled, osp.join(img_save_dir, osp.basename(img_path).replace(ext, '_0000.nii.gz')))
+            pbar.update(1)
 
 
 def crop_roi(img_dir, low_msk_dir, save_img_dir, margins=[100, 50, 15]):
     if not osp.exists(save_img_dir):
         os.mkdir(save_img_dir)
-    img_paths = sorted(glob(img_dir + '/*.mha'))
+    img_paths = sorted(glob(img_dir + '/*.*'))
     crop_coordinates = {}
-    # with tqdm(total=len(img_paths)) as pbar:
-    for img_path in img_paths:
-        low_msk_path = osp.join(low_msk_dir, osp.basename(img_path).replace('.mha', '.nii.gz'))
-        img = sitk.ReadImage(img_path, sitk.sitkFloat32)
-        low_msk = sitk.ReadImage(low_msk_path)
-        pancreas_mask_np = sitk.GetArrayFromImage(low_msk)
-        pancreas_mask_np[pancreas_mask_np != 1] = 0
-        pancreas_mask_np[pancreas_mask_np != 0] = 1
-        pancreas_mask_nonzeros = np.nonzero(pancreas_mask_np)
-        min_x = min(pancreas_mask_nonzeros[2])
-        min_y = min(pancreas_mask_nonzeros[1])
-        min_z = min(pancreas_mask_nonzeros[0])
-        max_x = max(pancreas_mask_nonzeros[2])
-        max_y = max(pancreas_mask_nonzeros[1])
-        max_z = max(pancreas_mask_nonzeros[0])
-        start_point_coordinates = (int(min_x), int(min_y), int(min_z))
-        finish_point_coordinates = (int(max_x), int(max_y), int(max_z))          
-        start_point_physical = low_msk.TransformIndexToPhysicalPoint(start_point_coordinates)
-        finish_point_physical = low_msk.TransformIndexToPhysicalPoint(finish_point_coordinates)
-        start_point = img.TransformPhysicalPointToIndex(start_point_physical)
-        finish_point = img.TransformPhysicalPointToIndex(finish_point_physical)
-        spacing = img.GetSpacing()
-        size = img.GetSize()
-        marginx = int(margins[0]/spacing[0])
-        marginy = int(margins[1]/spacing[1])
-        marginz = int(margins[2]/spacing[2])
-        x_start = max(0, start_point[0] - marginx)
-        x_finish = min(size[0], finish_point[0] + marginx)
-        y_start = max(0, start_point[1] - marginy)
-        y_finish = min(size[1], finish_point[1] + marginy)
-        z_start = max(0, start_point[2] - marginz)
-        z_finish = min(size[2], finish_point[2] + marginz)
-        cropped_image = img[x_start:x_finish, y_start:y_finish, z_start:z_finish]
-        crop_coordinates[osp.basename(img_path).replace('.mha', '')] = {
-            'x_start': x_start,
-            'x_finish': x_finish,
-            'y_start': y_start,
-            'y_finish': y_finish,
-            'z_start': z_start,
-            'z_finish': z_finish}
-        sitk.WriteImage(cropped_image, osp.join(save_img_dir, osp.basename(img_path).replace('.mha', '_0000.nii.gz')))
-        # pbar.update(1)
+    with tqdm(total=len(img_paths)) as pbar:
+        for img_path in img_paths:
+            ext = get_file_extension(img_path)
+            low_msk_path = osp.join(low_msk_dir, osp.basename(img_path).replace(ext, '.nii.gz'))
+            img = sitk.ReadImage(img_path, sitk.sitkFloat32)
+            low_msk = sitk.ReadImage(low_msk_path)
+            pancreas_mask_np = sitk.GetArrayFromImage(low_msk)
+            pancreas_mask_np[pancreas_mask_np != 1] = 0
+            pancreas_mask_np[pancreas_mask_np != 0] = 1
+            pancreas_mask_nonzeros = np.nonzero(pancreas_mask_np)
+            min_x = min(pancreas_mask_nonzeros[2])
+            min_y = min(pancreas_mask_nonzeros[1])
+            min_z = min(pancreas_mask_nonzeros[0])
+            max_x = max(pancreas_mask_nonzeros[2])
+            max_y = max(pancreas_mask_nonzeros[1])
+            max_z = max(pancreas_mask_nonzeros[0])
+            start_point_coordinates = (int(min_x), int(min_y), int(min_z))
+            finish_point_coordinates = (int(max_x), int(max_y), int(max_z))          
+            start_point_physical = low_msk.TransformIndexToPhysicalPoint(start_point_coordinates)
+            finish_point_physical = low_msk.TransformIndexToPhysicalPoint(finish_point_coordinates)
+            start_point = img.TransformPhysicalPointToIndex(start_point_physical)
+            finish_point = img.TransformPhysicalPointToIndex(finish_point_physical)
+            spacing = img.GetSpacing()
+            size = img.GetSize()
+            marginx = int(margins[0]/spacing[0])
+            marginy = int(margins[1]/spacing[1])
+            marginz = int(margins[2]/spacing[2])
+            x_start = max(0, start_point[0] - marginx)
+            x_finish = min(size[0], finish_point[0] + marginx)
+            y_start = max(0, start_point[1] - marginy)
+            y_finish = min(size[1], finish_point[1] + marginy)
+            z_start = max(0, start_point[2] - marginz)
+            z_finish = min(size[2], finish_point[2] + marginz)
+            cropped_image = img[x_start:x_finish, y_start:y_finish, z_start:z_finish]
+            crop_coordinates[osp.basename(img_path).replace(ext, '')] = {
+                'x_start': x_start,
+                'x_finish': x_finish,
+                'y_start': y_start,
+                'y_finish': y_finish,
+                'z_start': z_start,
+                'z_finish': z_finish}
+            sitk.WriteImage(cropped_image, osp.join(save_img_dir, osp.basename(img_path).replace(ext, '_0000.nii.gz')))
+            pbar.update(1)
     return crop_coordinates
 
 
@@ -163,7 +174,6 @@ def PostProcessing(cropped_prediction, pred_path_nifti):
 
 
 def GetFullSizDetectionMap(prediction_np, crop_coordinates, full_image, inv_alpha=15):
-    from report_guided_annotation.extract_lesion_candidates import extract_lesion_candidates
     lesion_candidates, confidences, indexed_pred = extract_lesion_candidates(prediction_np, dynamic_threshold_factor=inv_alpha)  
     patient_level_prediction = float(np.max(lesion_candidates))
     full_size_detection_map = np.zeros(sitk.GetArrayFromImage(full_image).shape)
@@ -193,12 +203,10 @@ def run(args):
         os.mkdir(args.output_dir)
     if not osp.exists(working_folder):
         os.mkdir(working_folder)
-    if not osp.exists(osp.join(args.output_dir, "images")):
-        os.mkdir(osp.join(args.output_dir, "images"))
-    if not osp.exists(osp.join(args.output_dir, "images", "pdac-detection-map")):
-        os.mkdir(osp.join(args.output_dir, "images", "pdac-detection-map"))
+    if not osp.exists(osp.join(args.output_dir, "pdac-detection-map")):
+        os.mkdir(osp.join(args.output_dir, "pdac-detection-map"))
 
-    image_folder = osp.join(args.input_dir, "images", "venous-ct")
+    image_folder = osp.join(args.input_dir)
     clinical_info_path = osp.join(args.input_dir, "clinical-information-pancreatic-ct.json")
 
     try:
@@ -249,28 +257,34 @@ def run(args):
         store_probability_maps=True)
 
     npz_fps = sorted(glob(cropped_pred_folder + '/*.npz'))
-    for npz_fp in npz_fps:
+    img_fps = sorted(glob(image_folder + '/*.*'))
+    likelohood = {}
+
+    for npz_fp, img_fp in zip(npz_fps, img_fps):
         filename = osp.basename(npz_fp)[:-4]
-        image_fp = osp.join(image_folder, filename + '.mha')
-        itk_img = sitk.ReadImage(image_fp, sitk.sitkFloat32)
+        ext = get_file_extension(img_fp)
+        assert osp.basename(img_fp)[:-len(ext)] == filename, f"{osp.basename(img_fp)[:-len(ext)]} and {filename}"
+        itk_img = sitk.ReadImage(img_fp, sitk.sitkFloat32)
         prediction = np.load(npz_fp)   
         nifti_fp = npz_fp.replace('.npz', '.nii.gz')
         prediction_postprocessed = PostProcessing(prediction, nifti_fp)
         detection_map, patient_level_prediction = GetFullSizDetectionMap(prediction_postprocessed, crop_coordinates[filename], itk_img, args.inv_alpha)
-        pixel_id = detection_map.GetPixelIDTypeAsString()
-        # print("detection output data type: ", pixel_id)
-        detection_map_fp = osp.join(args.output_dir, "images", "pdac-detection-map", 'detection_map.mha')
+        detection_map_fp = osp.join(args.output_dir, "pdac-detection-map", f'{filename}.nii.gz')
         sitk.WriteImage(detection_map, detection_map_fp)
-        write_json_file(location=osp.join(args.output_dir, "pdac-likelihood.json"), content=patient_level_prediction)
+        likelohood[f"{filename}"] = patient_level_prediction
+    
+    if os.path.exists(working_folder):
+        shutil.rmtree(working_folder)
 
-    print(f"\nInference time: {time.time()-start:.2f} seconds")
-    print(f"Patient-level score: {patient_level_prediction:.4f}")
-    print(f"Lesion detection map is saved at: {detection_map_fp}\n")
+    write_json_file(location=osp.join(args.output_dir, f"pdac-likelihood.json"), content=likelohood)
+    print(f"\nInference time: {(time.time()-start)/len(npz_fps):.2f} seconds per image")
+    print(f"Patient-level scores  are saved at: {osp.join(args.output_dir, f'pdac-likelihood.json')}")
+    print(f"Lesion detection maps are saved at: {osp.join(args.output_dir, 'pdac-detection-map')}\n")
 
 
 def print_info():
     print("#############################################################################################################################################################################\n")
-    print("Welcome to use Team DTI's PDAC detection models (1st place in the PANORAMA challenge)")
+    print("Welcome to use Team DTI's PDAC detection models (1st place in the PANORAMA challenge)\n")
     print("Please cite the following paper when using our code and models:")
 
     print('\n\nLiu, H., et al. "AI-assisted Early Detection of Pancreatic Ductal Adenocarcinoma on Contrast-enhanced CT"\n\n')
