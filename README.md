@@ -42,10 +42,7 @@ cd ../report-guided-annotation
 pip install -e .
 ```
 
-- Download the `workspace` folder [here](https://drive.google.com/drive/folders/1RpbofQDrQNzwfYjFhQYRRWCN8HhIoZQP?usp=sharing). It includes our pretrained models and an example testing image. 
-
-### Data preparation
-Once the `workspace` folder is downloaded, the directory tree will be:
+- Download the `workspace` folder [here](https://drive.google.com/drive/folders/1RpbofQDrQNzwfYjFhQYRRWCN8HhIoZQP?usp=sharing). It includes our pretrained models and an example testing image: 
 ```
 PDAC_Detection/
 └── workspace/
@@ -78,7 +75,7 @@ Where:
 
 - `${INPUT_DIR}`  is the directory containing your input images (e.g., nii.gz, mhd, mha, etc).
 - `${OUTPUT_DIR}` is the directory where the model prediction will be saved.
-- `${INV_ALPHA}`  controls the expansion of the predicted lesion (larger values predict larger lesions); defaults to `15`.
+- `${INV_ALPHA}`  controls the expansion of the predicted lesion (larger values predict larger lesions); default=`15`.
 
 - For a quick test using the example testing images, run:
 ```
@@ -86,10 +83,10 @@ python main.py -i ./workspace/test_example/input -o ./workspace/test_example/out
 ```
 
 - What are the outputs?
-(1) PDAC detection map (ranging from 0-1) where each predicted lesion is assigned a confidence score.
-(2) Patient-level likelihood score (computed as the **maximum** value of the detection map)
+    - (1) PDAC detection map (ranging from 0-1) where each predicted lesion is assigned a confidence score.
+    - (2) Patient-level likelihood score (computed as the **maximum** value of the detection map)
 
-The PDAC detection maps are saved under `${OUTPUT_DIR}/pdac-detection-map` with the following directory structure:
+The PDAC detection maps are saved under `${OUTPUT_DIR}/pdac-detection-map` as follows:
 ```
 ├── ${OUTPUT_DIR}/
     ├── pdac-likelihood.json
