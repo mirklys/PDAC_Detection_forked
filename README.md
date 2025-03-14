@@ -22,14 +22,17 @@ If you have any questions, feel free to contact han.liu@siemens-healthineers.com
 ---
 
 ### Installation
-- Requirements: cuda-11.1, cudnn/9.0.0-cuda-12
-- Create a virtual environment:
+#### Requirements
+```
+cuda-11.1, cudnn/9.0.0-cuda-12
+```
+#### Create a virtual environment:
 ```
 conda create pdac python=3.12 -y
 conda activate pdac
 ```
 
-- Install dependencies
+#### Install dependencies
 ```
 git clone https://github.com/han-liu/PDAC_Detection.git
 cd PDAC_Detection
@@ -42,7 +45,7 @@ cd ../report-guided-annotation
 pip install -e .
 ```
 
-- Download the `workspace` folder [here](https://drive.google.com/drive/folders/1RpbofQDrQNzwfYjFhQYRRWCN8HhIoZQP?usp=sharing). It includes our pretrained models and an example testing image: 
+#### Download the our models and example testing images [here](https://drive.google.com/drive/folders/1RpbofQDrQNzwfYjFhQYRRWCN8HhIoZQP?usp=sharing)
 ```
 PDAC_Detection/
 └── workspace/
@@ -67,7 +70,7 @@ export nnUNet_preprocessed="./workspace/nnUNet_preprocessed"
 export nnUNet_results="./workspace/nnUNet_results"
 ```
 
-#### Test our model with the following command:
+#### To test our model, run:
 ```
 python main.py -i ${INPUT_DIR} -o ${OUTPUT_DIR} --inv_alpha ${INV_ALPHA}
 ```
