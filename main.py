@@ -15,7 +15,7 @@ warnings.filterwarnings("ignore")
 
 
 def get_args_parser():
-    parser = argparse.ArgumentParser("Diffusion Model Training", add_help=True)
+    parser = argparse.ArgumentParser("PDAC detection", add_help=True)
     parser.add_argument("-i", "--input_dir",   type=str, required=True, help="input directory that contains CECT and metadata")
     parser.add_argument("-o", "--output_dir",  type=str, required=True, help="output directory that saves prediction results")
     parser.add_argument("-m", "--model_dir",   type=str, default="./workspace/nnUNet_results", help="model directory for nnU-Net")
