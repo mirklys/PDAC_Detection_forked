@@ -9,7 +9,7 @@ Paper: [AI-assisted Early Detection of Pancreatic Ductal Adenocarcinoma on Contr
 
 If you find our code/paper helpful for your research, please kindly consider citing our work:
 ```
-@incollection{liu2025ai,
+@article{liu2025ai,
   title={AI-assisted Early Detection of Pancreatic Ductal Adenocarcinoma on Contrast-enhanced CT},
   author={Liu, Han and Gao, Riqiang and Grbic, Sasa},
   journal={arXiv preprint arXiv:2503.10068},
