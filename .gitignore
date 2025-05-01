@@ -1,0 +1,9 @@
+workspace
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+*.cpython-312.pyc
+*.egg-info/
+*.egg
+*.log
