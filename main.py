@@ -197,8 +197,6 @@ def write_json_file(*, location, content):
 def run(args):
     start = time.time()
     working_folder = osp.join(args.output_dir, "itm")
-    if not osp.exists(working_folder):
-        os.mkdir(working_folder)
     if not osp.exists(args.output_dir):
         os.mkdir(args.output_dir)
     if not osp.exists(working_folder):
