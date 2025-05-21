@@ -51,13 +51,13 @@ Pancreatic ductal adenocarcinoma (PDAC) is among the deadliest malignancies, oft
 \end{abstract}
 
 \section{Introduction}
-As part of course Artificial Inteligence in Medical Imaging (AIMI)\cite{b4}, we were tasked with improving the baseline model of \textsc{PANORAMA}\cite{b5} challenge. The PANORAMA challenge is the first large-scale reader study which aimed to establish the baseline performance of radiologists at Pancreatic Ductal Adenocarcinoma (PDAC)(add reference) detection on CECT scans. PDAC) is the most common type of malignant tumor affecting the pancreas and ranks among the deadliest of all solid cancers. In the United States, it is projected that there will be approximately 67,440 new cases and 51,980 deaths from PDAC in 2025\cite{b2}.
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=0.75\linewidth]{pancreatic_cancer.jpg}
-%     \caption{Part of a CT scan showing a patient with pancreatic cancer\cite{b6}}
-%     \label{fig:ct_scan}
-% \end{figure}
+The PANORAMA\cite{b5}  challenge is the first large-scale reader study which aimed to establish the baseline performance of radiologists at Pancreatic Ductal Adenocarcinoma (PDAC)(add reference) detection on CECT scans. PDAC) is the most common type of malignant tumor affecting the pancreas and ranks among the deadliest of all solid cancers. In the United States, it is projected that there will be approximately 67,440 new cases and 51,980 deaths from PDAC in 2025\cite{b2}.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{pancreatic_cancer.jpg}
+    \caption{Part of a CT scan showing a patient with pancreatic cancer\cite{b6}}
+    \label{fig:ct_scan}
+\end{figure}
 The challenge included more  68 international readers and more than 400 cases in the hidden testing cohort. Readers study was two fold. The first task was giving a discrete diagnosis with an additional PDAC likelihood score, and the second task readers provided a point annotation of the leasion location in the PDAC cases.
 
 \section{Related work}
@@ -66,15 +66,15 @@ Pancreatic ductal adenocarcinoma (PDAC) often leaves only faint radiologic footp
 
 The \textsc{Panorama} grand challenge provides the first large-scale test bed for such systems in PDAC, with the following distinguishing characteristics:  
 \begin{itemize}[leftmargin=*]
-  \item \textbf{Data volume.}  Annotated scans of $>$2\,500 cases for open development.
+  \item \textbf{Data volume.} Annotated scans of $>$2\,500 cases for open development.
   \item \textbf{Human baseline.} 68 international radiologists supply a reader-study benchmark, enabling rigorous algorithm-vs-expert comparison.
-  \item \textbf{Task design.}  Algorithms are evaluated on (i) binary PDAC presence scores and (ii) voxel-level lesion localisation, mirroring real-world deployment needs.
+  \item \textbf{Task design.} Algorithms are evaluated on (i) binary PDAC presence scores and (ii) voxel-level lesion localisation, mirroring real-world deployment needs.
 \end{itemize}
 
 State-of-the-art deep learning approaches, such as the PANDA model described by Cao et al. (2023) which utilizes components like CNNs and transformers, have reported NCCT AUCs $>0.95$ for pancreatic lesion detection on single-centre cohorts.\cite{b9}. Yet external validation is rare, and most models are tuned on datasets an order of magnitude smaller than \textsc{Panorama}. Critically, these smaller datasets typically have fewer different data sources, leading to lower overall variance between samples, which will likely boost prediction scores but is unlikely to generalize well.
 
 \subsection{Model starting point}
-We chose to use the winning submission of the PANORAMA competition as starting point for out own experiments. We considered using the competition baseline but found them to be very similar, with the competition winner's repo being easier to follow. This approach uses nnUnet \cite{b1} an out of the box neural net solution that builds on the U-net architecture that is specifically tuned for biomedical use cases and contains. Additionally, it can automatically adapt preprocessing, neural net architecture, and post processing according to the data it is classifying.
+We chose to use the winning submission of the PANORAMA competition as starting point for out own experiments. We considered using the competition baseline but found them to be very similar, with the competition winner's repo being easier to follow. This approach uses nnU-net, \cite{b1} an out of the box neural net solution that builds on the U-net architecture that is specifically tuned for biomedical use cases and contains. Additionally, nnU-net can automatically adapt preprocessing, neural net architecture, and post processing according to the data it is classifying.
 
 The full inference pipeline consists of 4 steps: down-sampling, low-res prediction, masking and high-res prediction. First images are loaded and the voxels are down-sampled according to a set spacing, main to save. Then the nnU-net makes a mask prediction, aiming to identify the rough area of the pancreas. This is very important as the pancreas is quite small and the CECT scans used as input cover the whole body of the patients. Standardized down-sampling is important in order to save computational cost without losing predictive ability. The mask is represented as a bounding box and in the next step, this bounding box is applied to the original image. Then a second prediction is made, this time at full resolution but only using the area within the bounding box. This prediction produces two outputs, the full scan of the patient with lesion candidate likelihoods applied to each voxel as well as a single number representing the probability that a patient has a pancreatic lesion.
 
@@ -91,7 +91,7 @@ One of the approaches we explored was training the network using the Tversky los
 There are a few more things we need to describe in the report: 
 
 - checking the data: balance and differences in test and training data
-- besides the loss, dice score curves of both baseline and tversky, maybe some outputs of the filters
+- besides the loss, dice score curves of both baseline and Tversky, maybe some outputs of the filters
 
 - some FP/FN analysis.
 
@@ -113,7 +113,6 @@ component, formatting, style, styling, insert
 \bibitem{b1} Isensee, F., Jaeger, P.F., Kohl, S.A.A. et al. nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation. Nat Methods 18, 203–211 (2021). https://doi.org/10.1038/s41592-020-01008-z
 \bibitem{b2} National Cancer Institute, ``SEER Cancer Stat Facts: Pancreatic Cancer,'' https://seer.cancer.gov/statfacts/html/pancreas.html, accessed May 15, 2025.
 \bibitem{b3} Saba, M., ``Tversky Loss,'' *Medium*, https://medium.com/@saba99/tversky-loss-902f5f8cc35f, accessed May 15, 2025.
-\bibitem{b4} Radboud University, ``Course: NWI-IMC037 – Artificial Intelligence and Medical Imaging,'' Osiris Course Catalogue, https://ru.osiris-student.nl/onderwijscatalogus/extern/cursus?taal=en\&cursuscode=NWI-IMC037\&collegejaar=2024, accessed May 15, 2025.
 \bibitem{b5} PANORAMA Grand Challenge, ``PANORAMA: AI Grand Challenge for Pancreatic Cancer Detection,'' https://panorama.grand-challenge.org/, accessed May 15, 2025.
 \bibitem{b6} The Radiology Assistant, ``Pancreas - Carcinoma,'' https://radiologyassistant.nl/abdomen/pancreas/pancreas-carcinoma-1, accessed May 15, 2025.
 \bibitem{b7} A. Esteva, B. Kuprel, R. A. Novoa, J. Ko, S. M. Swetter, H. M. Blau, and S. Thrun, ``Dermatologist-level classification of skin cancer with deep neural networks,'' \textit{Nature}, vol. 542, no. 7639, pp. 115--118, 2017, doi: 10.1038/nature21056.
