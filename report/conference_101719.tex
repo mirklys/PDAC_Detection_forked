@@ -62,7 +62,7 @@ The challenge included more  68 international readers and more than 400 cases in
 
 \section{Related work}
 \section{Motivation for Machine-Learning–Driven PDAC Detection}
-Pancreatic ductal adenocarcinoma (PDAC) often leaves only faint radiologic footprints—e.g.\ minimal ductal calibre changes or subtle parenchymal texture shifts—on contrast-enhanced CT (CECT) months before a tumour becomes obvious.  These patterns are easily missed by experts reviewing thousands of abdominal scans for diverse indications.  Modern deep-learning systems, however, thrive on precisely this kind of weak-signal problem: by optimising millions of parameters across 3-D feature hierarchies, they can amplify and aggregate minute cues that fall below human perceptual thresholds \cite{Esteva2017,McKinney2020}.
+Pancreatic ductal adenocarcinoma (PDAC) often leaves only faint radiologic footprints—e.g.\ minimal ductal calibre changes or subtle parenchymal texture shifts—on contrast-enhanced CT (CECT) months before a tumour becomes obvious.  These patterns are easily missed by experts reviewing thousands of abdominal scans for diverse indications.  Modern deep-learning systems, however, thrive on precisely this kind of weak-signal problem: by optimising millions of parameters across 3-D feature hierarchies, they can amplify and aggregate minute cues that fall below human perceptual thresholds \cite{b7, b8}.
 
 The \textsc{Panorama} grand challenge provides the first large-scale test bed for such systems in PDAC, with the following distinguishing characteristics:  
 \begin{itemize}[leftmargin=*]
@@ -71,7 +71,7 @@ The \textsc{Panorama} grand challenge provides the first large-scale test bed fo
   \item \textbf{Task design.} Algorithms are evaluated on (i) binary PDAC presence scores and (ii) voxel-level lesion localisation, mirroring real-world deployment needs.
 \end{itemize}
 
-State-of-the-art deep learning approaches, such as the PANDA model described by Cao et al. (2023) which utilizes components like CNNs and transformers, have reported NCCT AUCs $>0.95$ for pancreatic lesion detection on single-centre cohorts.\cite{Cao2023,PANDA2023}. Yet external validation is rare, and most models are tuned on datasets an order of magnitude smaller than \textsc{Panorama}. Critically, these smaller datasets typically have fewer different data sources, leading to lower overall variance between samples, which will likely boost prediction scores but is unlikely to generalize well.
+State-of-the-art deep learning approaches, such as the PANDA model described by Cao et al. (2023) which utilizes components like CNNs and transformers, have reported NCCT AUCs $>0.95$ for pancreatic lesion detection on single-centre cohorts.\cite{b9}. Yet external validation is rare, and most models are tuned on datasets an order of magnitude smaller than \textsc{Panorama}. Critically, these smaller datasets typically have fewer different data sources, leading to lower overall variance between samples, which will likely boost prediction scores but is unlikely to generalize well.
 
 \subsection{Model starting point}
 We chose to use the winning submission of the PANORAMA competition as starting point for out own experiments. We considered using the competition baseline but found them to be very similar, with the competition winner's repo being easier to follow. This approach uses nnU-net, \cite{b1} an out of the box neural net solution that builds on the U-net architecture that is specifically tuned for biomedical use cases and contains. Additionally, nnU-net can automatically adapt preprocessing, neural net architecture, and post processing according to the data it is classifying.
@@ -84,7 +84,7 @@ The full inference pipeline consists of 4 steps: down-sampling, low-res predicti
 
 
 \section{Improving the baseline}
-When it came to improving the baseline, we thought about different approaches and what could be doable. We quickly concluded that the best goal was to move the AUC curve to the left. This reduces the rate of false positive(FP) cases and thus reduces the workload of radiologists and doctors, because they need to review all of the cases that are marked as positive.
+When considering how to improve the baseline, we explored various potential approaches and evaluated their feasibility. We quickly determined that the most effective objective was to shift the AUC curve to the left. This shift reduces the false positive (FP) rate, thereby decreasing the workload for radiologists and physicians, who must review all cases flagged as positive.
 
 One of the approaches we explored was training the network using the Tversky loss, a loss function commonly used in medical image analysis. It measures the dissimilarity between two sets—typically the predicted segmentation and the ground truth—and is a generalization of the Jaccard index.\cite{b3} By tuning the parameters $\alpha$ and $\beta$, you can control how the loss penalizes different types of segmentation errors. For instance, setting $\alpha$ $>$ $\beta$ places greater emphasis on reducing false positives, whereas $\beta$ $>$ $\alpha$ focuses more on minimizing false negatives. This flexibility allows Tversky loss to fine-tune the trade-off between precision and recall, making it particularly useful in scenarios where the cost of false positives and false negatives is not equal. In our case, where minimizing false positives and maximizing precision is crucial, Tversky loss provides an effective way to bias the model accordingly.
 
@@ -115,6 +115,12 @@ component, formatting, style, styling, insert
 \bibitem{b3} Saba, M., ``Tversky Loss,'' *Medium*, https://medium.com/@saba99/tversky-loss-902f5f8cc35f, accessed May 15, 2025.
 \bibitem{b5} PANORAMA Grand Challenge, ``PANORAMA: AI Grand Challenge for Pancreatic Cancer Detection,'' https://panorama.grand-challenge.org/, accessed May 15, 2025.
 \bibitem{b6} The Radiology Assistant, ``Pancreas - Carcinoma,'' https://radiologyassistant.nl/abdomen/pancreas/pancreas-carcinoma-1, accessed May 15, 2025.
+\bibitem{b7} A. Esteva, B. Kuprel, R. A. Novoa, J. Ko, S. M. Swetter, H. M. Blau, and S. Thrun, ``Dermatologist-level classification of skin cancer with deep neural networks,'' \textit{Nature}, vol. 542, no. 7639, pp. 115--118, 2017, doi: 10.1038/nature21056.
+\bibitem{b8} S. M. McKinney, M. Sieniek, V. Godbole, J. Godwin, N. Antropova, H. Ashrafian, T. Back, A. Chesus, D. C. Corrado, B. Darzi, \textit{et al.}, ``International evaluation of an AI system for breast cancer screening,'' \textit{Nature}, vol. 577, no. 7788, pp. 89--94, 2020, doi: 10.1038/s41586-019-1799-6.
+\bibitem{b9} K. Cao, Y. Xia, J. Yao, H. Xu, L. Lambert, T. Zhang, W. Tang, G. Jin, J. Hui, F. Xu, I. Nogues, X. Li, W. Guo, Y. Wang, W. Fang, M. Qiu, Y. Hou, T. Kovarnik, M. Vocka, Y. Lu, Y. Chen, X. Chen, Z. Liu, Z. Chen, C. Xie, R. Zhang, H. Lu, G. Hager, A. L. Yuille, L. Lu, C. Shao, Y. Shi, T. Liang, L. Zhang, and J. Lu, ``Large-scale pancreatic cancer detection via non-contrast CT and deep learning,'' \textit{Nature Medicine}, vol. 29, no. 12, pp. 3033--3043, 2023, doi: 10.1038/s41591-023-02640-w.
+
+
+
 
 
 
