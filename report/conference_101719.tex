@@ -8,6 +8,7 @@
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{enumitem}
+\usepackage{float}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
@@ -51,14 +52,16 @@ Pancreatic ductal adenocarcinoma (PDAC) is among the deadliest malignancies, oft
 \end{abstract}
 
 \section{Introduction}
-The PANORAMA\cite{b5}  challenge is the first large-scale reader study which aimed to establish the baseline performance of radiologists at Pancreatic Ductal Adenocarcinoma (PDAC)(add reference) detection on CECT scans. PDAC) is the most common type of malignant tumor affecting the pancreas and ranks among the deadliest of all solid cancers. In the United States, it is projected that there will be approximately 67,440 new cases and 51,980 deaths from PDAC in 2025\cite{b2}.
-\begin{figure}
-    \centering
-    \includegraphics[width=0.75\linewidth]{pancreatic_cancer.jpg}
-    \caption{Part of a CT scan showing a patient with pancreatic cancer\cite{b6}}
-    \label{fig:ct_scan}
+The PANORAMA challenge \cite{b5} is the first large-scale reader study designed to establish baseline radiologist performance in detecting Pancreatic Ductal Adenocarcinoma (PDAC) on contrast-enhanced computed tomography (CECT) scans. PDAC is the most common type of malignant tumor affecting the pancreas and is among the deadliest of all solid cancers. In the United States alone, approximately 67,440 new cases and 51,980 deaths from PDAC are projected for 2025 \cite{b2}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\linewidth]{pancreatic_cancer.jpg}
+\caption{Part of a CT scan showing a patient with pancreatic cancer \cite{b6}.}
+\label{fig:ct_scan}
 \end{figure}
-The challenge included more  68 international readers and more than 400 cases in the hidden testing cohort. Readers study was two fold. The first task was giving a discrete diagnosis with an additional PDAC likelihood score, and the second task readers provided a point annotation of the leasion location in the PDAC cases.
+
+The challenge involved over 68 international radiologists and a hidden test cohort of more than 400 cases. The reader study consisted of two components: (1) radiologists provided a binary diagnosis along with a PDAC likelihood score, and (2) for cases identified as PDAC, they marked the lesion location using point annotations.
 
 \section{Related work}
 \section{Motivation for Machine-Learning–Driven PDAC Detection}
@@ -66,7 +69,7 @@ Pancreatic ductal adenocarcinoma (PDAC) often leaves only faint radiologic footp
 
 The \textsc{Panorama} grand challenge provides the first large-scale test bed for such systems in PDAC, with the following distinguishing characteristics:  
 \begin{itemize}[leftmargin=*]
-  \item \textbf{Data volume.} Annotated scans of $>$2\,500 cases for open development.
+  \item \textbf{Data volume.} Annotated scans of $>$2238 cases for open development.
   \item \textbf{Human baseline.} 68 international radiologists supply a reader-study benchmark, enabling rigorous algorithm-vs-expert comparison.
   \item \textbf{Task design.} Algorithms are evaluated on (i) binary PDAC presence scores and (ii) voxel-level lesion localisation, mirroring real-world deployment needs.
 \end{itemize}
@@ -76,17 +79,28 @@ State-of-the-art deep learning approaches, such as the PANDA model described by 
 \subsection{Model starting point}
 We chose to use the winning submission of the PANORAMA competition as starting point for out own experiments. We considered using the competition baseline but found them to be very similar, with the competition winner's repo being easier to follow. This approach uses nnU-net, \cite{b1} an out of the box neural net solution that builds on the U-net architecture that is specifically tuned for biomedical use cases and contains. Additionally, nnU-net can automatically adapt preprocessing, neural net architecture, and post processing according to the data it is classifying.
 
-The full inference pipeline consists of 4 steps: down-sampling, low-res prediction, masking and high-res prediction. First images are loaded and the voxels are down-sampled according to a set spacing, main to save. Then the nnU-net makes a mask prediction, aiming to identify the rough area of the pancreas. This is very important as the pancreas is quite small and the CECT scans used as input cover the whole body of the patients. Standardized down-sampling is important in order to save computational cost without losing predictive ability. The mask is represented as a bounding box and in the next step, this bounding box is applied to the original image. Then a second prediction is made, this time at full resolution but only using the area within the bounding box. This prediction produces two outputs, the full scan of the patient with lesion candidate likelihoods applied to each voxel as well as a single number representing the probability that a patient has a pancreatic lesion.
+The full inference pipeline consists of 4 steps: down-sampling, low-res prediction, masking and high-res prediction. First images are loaded and the voxels are down-sampled according to a set spacing, main to save. Then the nnU-net makes a mask prediction, aiming to identify the rough area of the pancreas. Size-standardized down-sampling save computational cost without losing predictive ability. All hyper-parameters for the prediction is left to the nnU-net defaults. The mask is represented as a bounding box which is applied to the original image. Finally, a second prediction is made, this time at full resolution but only using the area within the bounding box. This prediction produces two outputs, the full scan of the patient with lesion candidate likelihoods applied to each voxel as well as a single number representing the probability that a patient has a pancreatic lesion. Here the Cross-Entropy is explicitly set for the loss, with the rest of the 
+
+
+\section{Improving the baseline}
+
+When considering how to improve the baseline, we explored various potential approaches and evaluated their feasibility. We quickly determined that the most effective objective was to shift the AUC curve to the left. This shift reduces the false positive (FP) rate, thereby decreasing the workload for radiologists and physicians, who must review all cases flagged as positive.
+
+\subsection{Tversky loss}
+One approach we investigated involved training the network using the Tversky loss, a loss function widely adopted in medical image analysis for its ability to handle class imbalance effectively. The Tversky loss quantifies the dissimilarity between the predicted segmentation and the ground truth, and can be viewed as a generalization of the Jaccard index \cite{b3}. It introduces two tunable parameters, $\alpha$ and $\beta$, which allow differential penalization of false positives (FP) and false negatives (FN). Specifically, setting $\alpha > \beta$ increases the penalty on false positives, while $\beta > \alpha$ emphasizes reducing false negatives. This flexibility allows Tversky loss to fine-tune the trade-off between precision and recall, making it particularly useful in scenarios where the cost of false positives and false negatives is not equal.In our case, where minimizing false positives and maximizing precision is crucial, Tversky loss provides an effective way to bias the model accordingly.
 
 \[
 \text{TI} = \frac{\text{TP}}{\text{TP} + \alpha \cdot \text{FN} + \beta \cdot \text{FP}}
 \]
 
 
-\section{Improving the baseline}
-When considering how to improve the baseline, we explored various potential approaches and evaluated their feasibility. We quickly determined that the most effective objective was to shift the AUC curve to the left. This shift reduces the false positive (FP) rate, thereby decreasing the workload for radiologists and physicians, who must review all cases flagged as positive.
 
-One of the approaches we explored was training the network using the Tversky loss, a loss function commonly used in medical image analysis. It measures the dissimilarity between two sets—typically the predicted segmentation and the ground truth—and is a generalization of the Jaccard index.\cite{b3} By tuning the parameters $\alpha$ and $\beta$, you can control how the loss penalizes different types of segmentation errors. For instance, setting $\alpha$ $>$ $\beta$ places greater emphasis on reducing false positives, whereas $\beta$ $>$ $\alpha$ focuses more on minimizing false negatives. This flexibility allows Tversky loss to fine-tune the trade-off between precision and recall, making it particularly useful in scenarios where the cost of false positives and false negatives is not equal. In our case, where minimizing false positives and maximizing precision is crucial, Tversky loss provides an effective way to bias the model accordingly.
+
+
+
+
+
+
 
 There are a few more things we need to describe in the report: 
 
@@ -94,7 +108,6 @@ There are a few more things we need to describe in the report:
 - besides the loss, dice score curves of both baseline and Tversky, maybe some outputs of the filters
 
 - some FP/FN analysis.
-
 
 \section{Results}
 TODO
@@ -116,7 +129,9 @@ component, formatting, style, styling, insert
 \bibitem{b5} PANORAMA Grand Challenge, ``PANORAMA: AI Grand Challenge for Pancreatic Cancer Detection,'' https://panorama.grand-challenge.org/, accessed May 15, 2025.
 \bibitem{b6} The Radiology Assistant, ``Pancreas - Carcinoma,'' https://radiologyassistant.nl/abdomen/pancreas/pancreas-carcinoma-1, accessed May 15, 2025.
 \bibitem{b7} A. Esteva, B. Kuprel, R. A. Novoa, J. Ko, S. M. Swetter, H. M. Blau, and S. Thrun, ``Dermatologist-level classification of skin cancer with deep neural networks,'' \textit{Nature}, vol. 542, no. 7639, pp. 115--118, 2017, doi: 10.1038/nature21056.
+
 \bibitem{b8} S. M. McKinney, M. Sieniek, V. Godbole, J. Godwin, N. Antropova, H. Ashrafian, T. Back, A. Chesus, D. C. Corrado, B. Darzi, \textit{et al.}, ``International evaluation of an AI system for breast cancer screening,'' \textit{Nature}, vol. 577, no. 7788, pp. 89--94, 2020, doi: 10.1038/s41586-019-1799-6.
+
 \bibitem{b9} K. Cao, Y. Xia, J. Yao, H. Xu, L. Lambert, T. Zhang, W. Tang, G. Jin, J. Hui, F. Xu, I. Nogues, X. Li, W. Guo, Y. Wang, W. Fang, M. Qiu, Y. Hou, T. Kovarnik, M. Vocka, Y. Lu, Y. Chen, X. Chen, Z. Liu, Z. Chen, C. Xie, R. Zhang, H. Lu, G. Hager, A. L. Yuille, L. Lu, C. Shao, Y. Shi, T. Liang, L. Zhang, and J. Lu, ``Large-scale pancreatic cancer detection via non-contrast CT and deep learning,'' \textit{Nature Medicine}, vol. 29, no. 12, pp. 3033--3043, 2023, doi: 10.1038/s41591-023-02640-w.
 
 
