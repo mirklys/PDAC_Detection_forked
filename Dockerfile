@@ -4,7 +4,7 @@ FROM nvidia/cuda:12.2.0-runtime-ubuntu20.04 AS base
 # Use a 'large' base container to show-case how to load pytorch and use the GPU (when enabled)
 
 # Ensures that Python output to stdout/stderr is not buffered: prevents missing information when terminating
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONUNBUFFERED=1
 ENV PYTHONWARNINGS="ignore"
 
 
@@ -16,8 +16,8 @@ RUN apt-get update && \
     wget \
     unzip \
     libopenblas-dev \
-    python3.9 \
-    python3.9-dev \
+    python3.10 \
+    python3.10-dev \
     python3-pip \
     nano \
     && \
@@ -36,7 +36,7 @@ USER user
 COPY --chown=user:user requirements.txt /opt/app/
 
 # You can add any Python dependencies to requirements.txt
-RUN python3.9 -m pip install \
+RUN python3.10 -m pip install \
     --user \
     --no-cache-dir \
     --no-color \
@@ -60,7 +60,7 @@ COPY --chown=user:user ./packages/report-guided-annotation/ /opt/algorithm/repor
 
 # Install 'report-guided-annotation' in editable mode
 RUN cd /opt/algorithm/report-guided-annotation && \
-    python3.9 -m pip install --user --no-cache-dir -e . && \
+    python3.10 -m pip install --user --no-cache-dir -e . && \
     cd /
 
 RUN mkdir -p /opt/algorithm/nnunet/nnunetv2/training/nnUNetTrainer/variants/loss/
@@ -78,4 +78,4 @@ ENV nnUNet_raw="/opt/algorithm/nnunet/nnUNet_raw" \
     nnUNet_preprocessed="/opt/algorithm/nnunet/nnUNet_preprocessed" \
     nnUNet_results="/opt/algorithm/nnunet/nnUNet_results"
 
-ENTRYPOINT [ "python3.9", "-m", "main"]
+ENTRYPOINT [ "python3.10", "-m", "main"]
