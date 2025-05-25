@@ -17,10 +17,13 @@ RUN apt-get update && \
     unzip \
     libopenblas-dev \
     python3.10 \
+    python3.10-distutils \ 
+    python3.10-setuptools \
     python3.10-dev \
     python3-pip \
     nano \
     && \
+    python3.10 -m pip install --upgrade pip setuptools wheel && \
     apt-get clean autoclean && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/* 
