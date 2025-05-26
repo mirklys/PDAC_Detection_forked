@@ -10,23 +10,23 @@ ENV PYTHONWARNINGS="ignore"
 
 RUN apt-get update && \
     apt-get install -y software-properties-common && \
-    add-apt-repository ppa:deadsnakes/ppa && \
+    add-apt-repository -y ppa:deadsnakes/ppa && \
+    apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
     git \
     wget \
     unzip \
     libopenblas-dev \
     python3.10 \
-    python3.10-distutils \ 
-    python3.10-setuptools \
     python3.10-dev \
-    python3-pip \
+    python3.10-venv \
     nano \
     && \
-    python3.10 -m pip install --upgrade pip setuptools wheel && \
+    python3.10 -m ensurepip --upgrade && \
+    python3.10 -m pip install --no-cache-dir --upgrade pip setuptools wheel && \
     apt-get clean autoclean && \
     apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/* 
+    rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -r user && useradd -m --no-log-init -r -g user user
 
