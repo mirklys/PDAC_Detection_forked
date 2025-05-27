@@ -90,17 +90,15 @@ One approach we investigated involved training the network using the Tversky los
 
 To integrate the Tversky loss into the nnU-Net framework, we implemented a custom trainer class, [nname], which inherits from the base nnUNetTrainer. This custom trainer was modified to utilize the Tversky loss function, with parameters $\alpha=$ and $\beta=$, for the segmentation task during model training, replacing the default Cross-Entropy loss for this component. Owing to significant computational requirements, the model incorporating Tversky loss was trained and evaluated on a single data fold from the nnU-Net's 5-fold cross-validation scheme. The baseline Cross-Entropy model was trained on all 5 folds for comparison. Performance metrics reported in Section IV for the Tversky model are based on this single fold. For comparative analysis, Receiver Operating Characteristic (ROC) curves were generated for both the baseline and Tversky loss models based on their patient-level PDAC probability scores. Furthermore, qualitative comparisons of segmentation predictions were performed on identical samples from the test set of the evaluated fold.
 \section{Results}
-TODO
+
 \section{Conclusions}
-TODO
+When building any machine learning models for medical applications, it is important to consider not only the performance metrics such as accuracy or $F_1$ score but also the practical implications of false positives and false negatives. In this project, we focused on reducing false positives in the detection of pancreatic ductal adenocarcinoma (PDAC) by modifying the loss function used during training to incorporate the Tversky loss. This approach allowed us to fine-tune the trade-off between false positives and false negatives, which is particularly relevant in medical imaging where the cost of false positives can lead to unnecessary additional tests and increased workload for radiologists.
 
-This document is a model and instructions for \LaTeX.
-This and the IEEEtran.cls file define the components of your paper [title, text, heads, etc.]. *CRITICAL: Do Not Use Symbols, Special Characters, Footnotes, 
-or Math in Paper Title or Abstract.
+We implemented a custom trainer class in the nnU-Net framework to utilize the Tversky loss function, and trained the model on a single fold of the \textsc{Panorama} dataset. The results showed that the Tversky loss model achieved a [performance] area under the ROC curve (AUC) compared to the baseline model using cross-entropy loss, indicating [...] performance in reducing false positives. Additionally, qualitative comparisons of segmentation predictions demonstrated that the Tversky loss model produced [....] accurate segmentations of PDAC lesions.
 
-\begin{IEEEkeywords}
-component, formatting, style, styling, insert
-\end{IEEEkeywords}
+Our findings are in line with previous studies that have shown the effectiveness of Tversky loss in improving segmentation performance in medical imaging tasks. However, yet alone, the Tversky loss may not be optimimal for decreasing false positives, and other its variations tend to be more effective, such as the Focal Tversky loss \cite{b3}. Future work could explore the use of Focal Tversky loss or other variations to further improve the model's performance in reducing false positives. Additionally, we could also consider incorporating attention mechanisms or other advanced techniques to enhance the model's ability to focus on relevant features in the CECT scans.
+
+
 
 \begin{thebibliography}{00}
 \bibitem{b1} Isensee, F., Jaeger, P.F., Kohl, S.A.A. et al. nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation. Nat Methods 18, 203–211 (2021). https://doi.org/10.1038/s41592-020-01008-z
