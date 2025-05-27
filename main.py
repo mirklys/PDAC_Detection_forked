@@ -249,9 +249,9 @@ def run(args):
         input_dir=cropped_image_folder, 
         output_dir=cropped_pred_folder,
         task=107, 
-        trainer="nnUNetTrainerCELossLesionSplit",
+        trainer="nnUNetTrainerTverskyLoss",
         plan="nnUNetPlans_v3",
-        folds="0,1,2,3,4",
+        folds="0",
         store_probability_maps=True)
 
     npz_fps = sorted(glob(cropped_pred_folder + '/*.npz'))

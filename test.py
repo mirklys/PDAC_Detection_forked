@@ -8,7 +8,7 @@ TEST_FOLDER = os.path.join(ROOT_FOLDER, "workspace/test")
 os.makedirs(TEST_FOLDER, exist_ok=True)
 os.makedirs(os.path.join(TEST_FOLDER, "imagesTs"), exist_ok=True)
 os.makedirs(os.path.join(TEST_FOLDER, "labelsTs"), exist_ok=True)
-os.makedirs(os.path.join(TEST_FOLDER, "labelsTs/predicted"), exist_ok=True)
+os.makedirs(os.path.join(TEST_FOLDER, "labelsTs/tversky_predicted"), exist_ok=True)
 
 
 def get_testing_fold(fold: int) -> list:
@@ -79,7 +79,7 @@ conda activate pdac_tversky \n""" ### WRITE YOUR ENVIRONEMNT
         f.write("\n")
         f.write(f"echo 'RAW=' $nnUNet_raw\n")
         f.write(
-            f"""python -m main -i {test_folder}/imagesTs/ -o {test_folder}/labelsTs/predicted \n"""
+            f"""python -m main -i {test_folder}/imagesTs/ -o {test_folder}/labelsTs/tversky_predicted \n"""
         )
     os.chmod(output_file, 0o777)
 
@@ -94,10 +94,10 @@ if __name__ == "__main__":
     env_vars = {
         "nnUNet_raw": "./workspace/nnUNet_preprocessed",
         "nnUNet_preprocessed": "./workspace/nnUNet_preprocessed",
-        "nnUNet_results": "./workspace/nnUNet_results",
+        "nnUNet_results": "./tversky_workspace/nnUNet_results",
         "ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS": "2",
         "OMP_NUM_THREADS": "2",
     }
     data_folder = os.path.join(ROOT_FOLDER, "data")
-    bash_test_name = "baseline_test.sh"
+    bash_test_name = "tversky_test.sh"
     run_test(data_folder=data_folder, env_vars=env_vars, bash_test_name=bash_test_name)

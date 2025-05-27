@@ -1,4 +1,5 @@
 workspace
+tversky_workspace
 *.pyc
 *.gz
 *.aux
