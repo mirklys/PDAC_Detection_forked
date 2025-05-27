@@ -5,3 +5,4 @@ workspace
 *.log
 *.fls
 *.fdb_latexmk
+data
