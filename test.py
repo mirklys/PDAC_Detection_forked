@@ -88,7 +88,7 @@ def run_test(env_vars: dict, data_folder: str, bash_test_name: str):
     images = get_images(data_folder)
     move_images_to_test(images)
     create_tester_shell_script(TEST_FOLDER, env_vars, output_file=bash_test_name)
-    subprocess.run([os.path.join(ROOT_FOLDER, bash_test_name)])
+    # subprocess.run([os.path.join(ROOT_FOLDER, bash_test_name)])
 
 if __name__ == "__main__":
     env_vars = {
@@ -98,6 +98,6 @@ if __name__ == "__main__":
         "ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS": "2",
         "OMP_NUM_THREADS": "2",
     }
-    data_folder = os.path.join(ROOT_FOLDER, "test/imagesTs")
+    data_folder = os.path.join(ROOT_FOLDER, "data")
     bash_test_name = "baseline_test.sh"
     run_test(data_folder=data_folder, env_vars=env_vars, bash_test_name=bash_test_name)

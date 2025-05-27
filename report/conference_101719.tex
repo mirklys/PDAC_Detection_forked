@@ -13,71 +13,62 @@
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
 
-\title{AIMI Group 19, Panorama\\
-% {\footnotesize \textsuperscript{*}Note: Sub-titles are not captured in Xplore and
-% should not be used}
-\thanks{Identify applicable funding agency here. If none, delete this.}
-}
+\title{Segmentation of Pancreatic Ductal Adenocarcinoma using ResUNet with Tversky Loss \\ {\Large Group 19, PANORAMA}}
 
-\author{\IEEEauthorblockN{1\textsuperscript{st} Giedrius Mirklys}
-\IEEEauthorblockA{\textit{Faculty of Science} \\
-\textit{Radboud University}\\
-Nijmegen, Netherlands \\
+\author{\IEEEauthorblockN{Giedrius Mirklys}
+\IEEEauthorblockA{s1101773\\
 giedrius.mirklys@ru.nl}
 \and
-\IEEEauthorblockN{2\textsuperscript{nd} Ignas Golubovskis}
-\IEEEauthorblockA{\textit{Faculty of Science} \\
-\textit{Radboud University}\\
-Nijmegen, Netherlands \\
+\IEEEauthorblockN{Ignas Golubovskis}
+\IEEEauthorblockA{YOUR_STUDENT_NUMBER\\
 ignas.golubovskis@ru.nl}
 \and
-\IEEEauthorblockN{3\textsuperscript{rd} Björn Westerlund}
-\IEEEauthorblockA{\textit{Faculty of Science} \\
-\textit{Radboud University}\\
-Nijmegen, Netherlands \\
+\IEEEauthorblockN{Björn Westerlund}
+\IEEEauthorblockA{YOUR_STUDENT_NUMBER\\
 bjoern.westerlund@ru.nl}
 \and
-\IEEEauthorblockN{4\textsuperscript{th} Luka Godnič}
-\IEEEauthorblockA{\textit{Faculty of Science} \\
-\textit{Radboud University}\\
-Nijmegen, Netherlands \\
+\IEEEauthorblockN{Luka Godnič}
+\IEEEauthorblockA{YOUR_STUDENT_NUMBER\\
 luka.godnic@ru.nl}
 }
 
 \maketitle
 
 \begin{abstract}
-Pancreatic ductal adenocarcinoma (PDAC) is among the deadliest malignancies, often eluding early detection due to its subtle presentation on contrast-enhanced CT (CECT) scans. The PANORAMA challenge provides a large-scale, multi-reader benchmark for PDAC detection, offering a unique opportunity to evaluate and enhance machine-learning–based diagnostic tools. In this project, we aimed to improve upon the winning submission of the PANORAMA competition, which leverages the nnU-Net framework for segmentation and classification. Our focus was on reducing false positives to minimize radiologist workload, primarily by incorporating the Tversky loss function, which allows fine-tuning the trade-off between false positives and false negatives. We analyzed the effect of this modification on detection accuracy and the area under the ROC curve (AUC), and further evaluated segmentation performance using Dice score metrics. This report details our methodological improvements, experimental results, and future directions for robust, generalizable PDAC detection models.
+Pancreatic ductal adenocarcinoma (PDAC) is among the deadliest types of pancreatic cancer, often eluding early detection due to its subtle presentation on contrast-enhanced CT (CECT) scans. The \textsc{Panorama} challenge provides a large-scale, multi-reader benchmark for PDAC detection, offering a unique opportunity to evaluate and enhance machine-learning–based diagnostic tools. In this project, we aimed to improve upon the winning submission of the \textsc{Panorama} competition, which leverages the nnU-Net framework for segmentation and classification. Our focus was on reducing false positives to minimize radiologist workload, primarily by incorporating the Tversky loss function, which allows fine-tuning the trade-off between false positives and false negatives. [A hint on the results]
+
+
+We analyzed the effect of this modification on detection accuracy and the area under the ROC curve (AUC), and further evaluated segmentation performance using Dice score metrics. This report details our methodological improvements, experimental results, and future directions for robust, generalizable PDAC detection models [might be excluded later].
 
 \end{abstract}
 
 \section{Introduction}
-The PANORAMA challenge \cite{b5} is the first large-scale reader study designed to establish baseline radiologist performance in detecting Pancreatic Ductal Adenocarcinoma (PDAC) on contrast-enhanced computed tomography (CECT) scans. PDAC is the most common type of malignant tumor affecting the pancreas and is among the deadliest of all solid cancers. In the United States alone, approximately 67,440 new cases and 51,980 deaths from PDAC are projected for 2025 \cite{b2}.
+The \textsc{Panorama} grand challenge \cite{b5} is the first large-scale reader study designed to establish baseline radiologist performance in detecting Pancreatic Ductal Adenocarcinoma (PDAC) on contrast-enhanced computed tomography (CECT) scans. PDAC is the most common type of malignant tumor affecting the pancreas and is among the deadliest of all solid cancers. In the United States alone, approximately 67,440 new cases and 51,980 deaths from PDAC are projected for 2025 \cite{b2}.
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.75\linewidth]{pancreatic_cancer.jpg}
-\caption{Part of a CT scan showing a patient with pancreatic cancer \cite{b6}.}
-\label{fig:ct_scan}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.75\linewidth]{./figures/pdac_sample.png}
+  \caption{A CECT scan slice illustrating Pancreatic Ductal Adenocarcinoma (PDAC).}
+  \label{fig:ct_scan}
 \end{figure}
 
-The challenge involved over 68 international radiologists and a hidden test cohort of more than 400 cases. The reader study consisted of two components: (1) radiologists provided a binary diagnosis along with a PDAC likelihood score, and (2) for cases identified as PDAC, they marked the lesion location using point annotations.
+Pancreatic ductal adenocarcinoma (PDAC) often leaves only faint radiologic footprints—e.g.\ minimal ductal calibre changes or subtle parenchymal texture shifts—on contrast-enhanced CT (CECT) months before a tumour becomes obvious.  These patterns are easily missed by experts reviewing thousands of abdominal scans for diverse indications.  Modern deep-learning systems, however, thrive on precisely this kind of weak-signal problem: by optimizing millions of parameters across 3-D feature hierarchies, they can amplify and aggregate minute cues that fall below human perceptual thresholds \cite{b7, b8}. See a sample CECT scan from the Grand Challenge dataset in Figure \ref{fig:ct_scan}, marking the lesion location.
 
-\section{Related work}
-\section{Motivation for Machine-Learning–Driven PDAC Detection}
-Pancreatic ductal adenocarcinoma (PDAC) often leaves only faint radiologic footprints—e.g.\ minimal ductal calibre changes or subtle parenchymal texture shifts—on contrast-enhanced CT (CECT) months before a tumour becomes obvious.  These patterns are easily missed by experts reviewing thousands of abdominal scans for diverse indications.  Modern deep-learning systems, however, thrive on precisely this kind of weak-signal problem: by optimising millions of parameters across 3-D feature hierarchies, they can amplify and aggregate minute cues that fall below human perceptual thresholds \cite{b7, b8}.
+The challenge involved over 68 international radiologists and a hidden test cohort of more than 400 cases. The reader study consisted of two components: (1) radiologists provided a binary diagnosis along with a PDAC likelihood score, and (2) for cases identified as PDAC, they marked the lesion location using point annotations. This setup enabled a rigorous comparison between human and algorithmic performance. The \textsc{Panorama} challenge thus provides the first large-scale test bed for PDAC detection systems, with several distinguishing characteristics:
 
-The \textsc{Panorama} grand challenge provides the first large-scale test bed for such systems in PDAC, with the following distinguishing characteristics:  
 \begin{itemize}[leftmargin=*]
   \item \textbf{Data volume.} Annotated scans of $>$2238 cases for open development.
   \item \textbf{Human baseline.} 68 international radiologists supply a reader-study benchmark, enabling rigorous algorithm-vs-expert comparison.
   \item \textbf{Task design.} Algorithms are evaluated on (i) binary PDAC presence scores and (ii) voxel-level lesion localisation, mirroring real-world deployment needs.
 \end{itemize}
 
-State-of-the-art deep learning approaches, such as the PANDA model described by Cao et al. (2023) which utilizes components like CNNs and transformers, have reported NCCT AUCs $>0.95$ for pancreatic lesion detection on single-centre cohorts.\cite{b9}. Yet external validation is rare, and most models are tuned on datasets an order of magnitude smaller than \textsc{Panorama}. Critically, these smaller datasets typically have fewer different data sources, leading to lower overall variance between samples, which will likely boost prediction scores but is unlikely to generalize well.
+State-of-the-art deep learning approaches, such as the PANDA model described by Cao et al. (2023) which utilizes components like CNNs and transformers, have reported NCCT AUCs $>0.95$ for pancreatic lesion detection on single-centre cohorts \cite{b9}. Yet external validation is rare, and most models are tuned on datasets an order of magnitude smaller than \textsc{Panorama}. Critically, these smaller datasets typically have fewer different data sources, leading to lower overall variance between samples, which will likely boost prediction scores but is unlikely to generalize well.
+
+In this project, we aimed to improve upon the winning submission of the \textsc{Panorama} competition [reference to Hiu et al] by focusing on reducing false positives (FP) in the detection of PDAC. We explored a single approach to achieve this: modifying the loss function used during training to incorporate the Tversky loss \cite{b10}, which allows for a more nuanced control over false positive and false negative rates. For example, \cite{Salehi 2017 DOI: 10.1007/978-3-319-67389-9_44} showed that incorporating the Tversky loss in their 3D-UNet model for detecting multiple sclerosis improved the F2 score from $51.77$ to $57.32$, compared to the Dice loss alone. Additionally, reducing FP rates is particularly relevant in medical imaging, where the cost of false positives can lead to unnecessary additional tests and increased workload for radiologists. We also compared to the baseline model, which used a standard cross-entropy loss function [citation], and evaluated the impact of this modification on the area under the ROC curve (AUC) and the Dice score, showing the segmentation performance of the model.
 
 \subsection{Model starting point}
-We chose to use the winning submission of the PANORAMA competition as starting point for out own experiments. We considered using the competition baseline but found them to be very similar, with the competition winner's repo being easier to follow. This approach uses nnU-net, \cite{b1} an out of the box neural net solution that builds on the U-net architecture that is specifically tuned for biomedical use cases and contains. Additionally, nnU-net can automatically adapt preprocessing, neural net architecture, and post processing according to the data it is classifying.
+We chose to use the winning submission of the \textsc{Panorama} competition as starting point for out own experiments. We considered using the competition baseline but found them to be very similar, with the competition winner's repo being easier to follow. This approach uses nnU-net, \cite{b1} an out of the box neural net solution that builds on the U-net architecture that is specifically tuned for biomedical use cases and contains. Additionally, nnU-net can automatically adapt preprocessing, neural net architecture, and post processing according to the data it is classifying.
 
 The full inference pipeline consists of 4 steps: down-sampling, low-res prediction, masking and high-res prediction. First images are loaded and the voxels are down-sampled according to a set spacing, main to save. Then the nnU-net makes a mask prediction, aiming to identify the rough area of the pancreas. Size-standardized down-sampling save computational cost without losing predictive ability. All hyper-parameters for the prediction is left to the nnU-net defaults. The mask is represented as a bounding box which is applied to the original image. Finally, a second prediction is made, this time at full resolution but only using the area within the bounding box. This prediction produces two outputs, the full scan of the patient with lesion candidate likelihoods applied to each voxel as well as a single number representing the probability that a patient has a pancreatic lesion. Here the Cross-Entropy is explicitly set for the loss, with the rest of the 
 
@@ -137,7 +128,7 @@ component, formatting, style, styling, insert
 
 
 
-
+\bibitem{b10} Salehi, S.S.M., Erdogmus, D., Gholipour, A. (2017). Tversky Loss Function for Image Segmentation Using 3D Fully Convolutional Deep Networks. In: Wang, Q., Shi, Y., Suk, HI., Suzuki, K. (eds) Machine Learning in Medical Imaging. MLMI 2017. Lecture Notes in Computer Science(), vol 10541. Springer, Cham. https://doi.org/10.1007/978-3-319-67389-9_44
 
 
 \end{thebibliography}
