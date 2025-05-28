@@ -19,4 +19,4 @@ export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=2
 export OMP_NUM_THREADS=2
 
 echo 'RAW=' $nnUNet_raw
-python -m main -i /home/bobby/repos/PDAC_Detection_forked/workspace/test/imagesTs/ -o /home/bobby/repos/PDAC_Detection_forked/workspace/test/labelsTs/predicted 
+python -m main_baseline -i /home/bobby/repos/PDAC_Detection_forked/workspace/test/imagesTs/ -o /home/bobby/repos/PDAC_Detection_forked/workspace/test/labelsTs/predicted -m workspace/nnUNet_results

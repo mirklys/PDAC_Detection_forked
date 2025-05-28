@@ -221,7 +221,7 @@ def run(args):
     # Step 1: downsample the dataset 
     print("Step 1/4: downsample the input image...")
     low_image_folder = osp.join(working_folder, 'LowImagesTr')
-    # downsample_panorama_dataset(image_folder, low_image_folder)
+    downsample_panorama_dataset(image_folder, low_image_folder)
 
     # Step 2: inference on low resolution images using nnU-Net
     print("Step 2/4: predict on the low-resolution images...")
@@ -230,9 +230,9 @@ def run(args):
         nnunet_model_dir=args.model_dir, 
         input_dir=low_image_folder, 
         output_dir=low_pred_folder,
-        trainer="nnUNetTrainerTverskyLoss",
-        checkpoint="checkpoint_best.pth",
-        plan="nnUNetPlans",
+        trainer="nnUNetTrainerCELossLesionSplit",
+        checkpoint="checkpoint_final.pth",
+        plan="nnUNetPlans_v3",
         folds="0",
         task=107)
 
@@ -253,9 +253,9 @@ def run(args):
         input_dir=cropped_image_folder, 
         output_dir=cropped_pred_folder,
         task=107, 
-        trainer="nnUNetTrainerTverskyLoss",
-        plan="nnUNetPlans",
-        checkpoint="checkpoint_best.pth",
+        trainer="nnUNetTrainerCELossLesionSplit",
+        plan="nnUNetPlans_v3",
+        checkpoint="checkpoint_final.pth",
         folds="0",
         store_probability_maps=True)
 
