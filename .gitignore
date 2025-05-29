@@ -8,3 +8,8 @@ tversky_workspace
 *.fdb_latexmk
 data
 panorama_labels
+baseline_test.sh
+testing_labels.csv
+training_labels.csv
+.vscode
+test
