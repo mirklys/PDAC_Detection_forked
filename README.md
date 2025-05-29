@@ -22,9 +22,8 @@ The primary objective of this model is to advance the accuracy of PDAC segmentat
 
 ## Prerequisites
 Ensure your system meets the following requirements before proceeding with the installation:
-* **CUDA:** Version 11.1
-* **cuDNN:** Version 9.0.0 (compatible with CUDA 12, though CUDA 11.1 is specified as the primary CUDA version)
-    * *Note: Please verify cuDNN compatibility with CUDA 11.1 if CUDA 12.x is not the intended environment.*
+* **CUDA:** Version 12.1
+* **cuDNN:** Version 9.0
 * **Python:** Version 3.12
 
 ## Installation
