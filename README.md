@@ -90,11 +90,9 @@ Proper dataset organization is crucial for the nnU-Net framework.
 The nnU-Net framework typically involves a preprocessing step to prepare the raw data.
 
 1.  **Run the preprocessing script:**
-    ```bash
-    # TODO: Insert the command for running the preprocessing script here.
-    # Example: nnUNetv2_plan_and_preprocess -d 107 --verify_dataset_integrity
-    ```
-    *Giedrius, please note that the command for the preprocessing script was missing in the original README. You'll need to add the specific nnU-Net command here (the example above is a common one, but verify the correct command for your setup).*
+   ```bash
+   nnUNetv2_preprocess -d 107 -c 3d_fullres -np 1
+   ```
 
 ## Training
 Once the dataset is prepared and preprocessed, you can proceed with model training.
@@ -102,7 +100,7 @@ Once the dataset is prepared and preprocessed, you can proceed with model traini
 1.  **Run the training script:**
     This command initiates training using the 3D full-resolution configuration with the custom `nnUNetTrainerV2_ResEnc_TverskyLoss` for dataset 107. The `--npz` flag indicates that the preprocessed data is saved in `.npz` format.
     ```bash
-    nnUNetv2_train 3d_fullres nnUNetTrainerV2_ResEnc_TverskyLoss 107 --npz
+    nnUNetv2_train 107 3d_fullres 0 -tr nnUNetTrainerTverskyLoss --c --npz
     ```
 
 ## Testing
