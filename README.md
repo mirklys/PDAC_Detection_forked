@@ -44,7 +44,7 @@ It is highly recommended to create a dedicated virtual environment to manage pro
 ### Cloning the Repository
 1.  **Clone the project repository:**
     ```bash
-    git clone [https://github.com/mirklys/PDAC_Detection_forked.git](https://github.com/mirklys/PDAC_Detection_forked.git)
+    git clone https://github.com/mirklys/PDAC_Detection_forked.git
     ```
 2.  **Navigate to the cloned directory:**
     ```bash
