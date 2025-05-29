@@ -221,7 +221,7 @@ def run(args):
     # Step 1: downsample the dataset 
     print("Step 1/4: downsample the input image...")
     low_image_folder = osp.join(working_folder, 'LowImagesTr')
-    downsample_panorama_dataset(image_folder, low_image_folder)
+    # downsample_panorama_dataset(image_folder, low_image_folder)
 
     # Step 2: inference on low resolution images using nnU-Net
     print("Step 2/4: predict on the low-resolution images...")
