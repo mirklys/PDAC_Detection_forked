@@ -1,114 +1,114 @@
-# AI-assisted Pancreatic Ductal Adenocarcinoma Detection 
-[![arXiv](https://img.shields.io/badge/preprint-2503.10068-blue)](https://arxiv.org/abs/2503.10068) [![cite](https://img.shields.io/badge/cite-BibTex-red)](xx) [![leaderboard](https://img.shields.io/badge/Leaderboard-yellow)](https://panorama.grand-challenge.org/evaluation/testing-phase/leaderboard/) [![website](https://img.shields.io/badge/Challenge%20website-50d13d)](https://panorama.grand-challenge.org/)
+# Segmentation of Pancreatic Ductal Adenocarcinoma using nnU-Net ResEnc with Tversky Loss
 
-### This is Team DTI's :trophy: 1st place solution in the PANORAMA Challenge. 
+## Table of Contents
+1.  [Overview](#overview)
+2.  [Project Aim](#project-aim)
+3.  [Prerequisites](#prerequisites)
+4.  [Installation](#installation)
+    * [Virtual Environment Setup](#virtual-environment-setup)
+    * [Cloning the Repository](#cloning-the-repository)
+    * [Installing Dependencies](#installing-dependencies)
+5.  [Dataset Preparation](#dataset-preparation)
+6.  [Preprocessing](#preprocessing)
+7.  [Training](#training)
+8.  [Testing](#testing)
+9.  [References](#references)
 
-Paper: [AI-assisted Early Detection of Pancreatic Ductal Adenocarcinoma on Contrast-enhanced CT](https://arxiv.org/abs/2503.10068)
+## Overview
+This repository provides the codebase and associated resources for the segmentation of Pancreatic Ductal Adenocarcinoma (PDAC). The methodology employs a modified nnU-Net architecture, incorporating Residual Encoder (ResEnc) blocks and utilizing a Tversky loss function.
 
-<p align="center"><img src="https://github.com/han-liu/PDAC_Detection/blob/main/assets/gt_vs_pred.png" alt="gt_vs_pred" width="750"/></p>
+## Project Aim
+The primary objective of this model is to advance the accuracy of PDAC segmentation in medical imaging. A specific focus is placed on reducing the False Positive rates observed in the segmentation results reported by Liu et al. (2025) [1].
 
-If you find our code/paper helpful for your research, please kindly consider citing our work:
-```
-@article{liu2025ai,
-  title={AI-assisted Early Detection of Pancreatic Ductal Adenocarcinoma on Contrast-enhanced CT},
-  author={Liu, Han and Gao, Riqiang and Grbic, Sasa},
-  journal={arXiv preprint arXiv:2503.10068},
-  year={2025}
-}
-```
+## Prerequisites
+Ensure your system meets the following requirements before proceeding with the installation:
+* **CUDA:** Version 11.1
+* **cuDNN:** Version 9.0.0 (compatible with CUDA 12, though CUDA 11.1 is specified as the primary CUDA version)
+    * *Note: Please verify cuDNN compatibility with CUDA 11.1 if CUDA 12.x is not the intended environment.*
+* **Python:** Version 3.12
 
-If you have any questions, feel free to contact han.liu@siemens-healthineers.com or open an Issue in this repo. 
+## Installation
 
----
+### Virtual Environment Setup
+It is highly recommended to create a dedicated virtual environment to manage project dependencies.
 
-### Installation
-#### Requirements
-```
-cuda-11.1, cudnn/9.0.0-cuda-12
-```
-#### Create a virtual environment:
-```
-conda create pdac python=3.12 -y
-conda activate pdac
-```
+1.  **Create a Conda virtual environment:**
+    ```bash
+    conda create --name pdac python=3.12 -y
+    ```
+2.  **Activate the virtual environment:**
+    ```bash
+    conda activate pdac
+    ```
 
-#### Install dependencies
-```
-git clone https://github.com/han-liu/PDAC_Detection.git
-cd PDAC_Detection
-pip install -r requirements.txt
+### Cloning the Repository
+1.  **Clone the project repository:**
+    ```bash
+    git clone [https://github.com/mirklys/PDAC_Detection_forked.git](https://github.com/mirklys/PDAC_Detection_forked.git)
+    ```
+2.  **Navigate to the cloned directory:**
+    ```bash
+    cd PDAC_Detection
+    ```
 
-cd packages/nnunetv2
-pip install -e .
-    
-cd ../report-guided-annotation
-pip install -e .
-```
+### Installing Dependencies
+1.  **Install primary requirements:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+2.  **Install nnU-Net V2 (editable mode):**
+    ```bash
+    cd packages/nnunetv2
+    pip install -e .
+    ```
+3.  **Install report-guided-annotation (editable mode):**
+    ```bash
+    cd ../report-guided-annotation
+    pip install -e .
+    ```
+    *After this step, you might want to navigate back to the project's root directory, e.g., `cd ../..` if subsequent commands are expected to be run from there.*
 
-#### Download the our models and example testing images [[click to download]](https://drive.google.com/drive/folders/1RpbofQDrQNzwfYjFhQYRRWCN8HhIoZQP?usp=sharing)
-```
-PDAC_Detection/
-└── workspace/
-    ├── nnUNet_raw/
-    ├── nnUNet_preprocessed/
-    └── nnUNet_results/
-        ├── Dataset103_PANORAMA_baseline_Pancreas_Segmentation/
-        └── Dataset107_PDAC_Detection/
-    └── test_example/
-            ├── output/
-            └── input/
-                ├── filename1.nii.gz
-                ├── filename2.mha
-                └── ...
-```
+## Dataset Preparation
+Proper dataset organization is crucial for the nnU-Net framework.
 
-### Inference
-#### Set up environment variables for nnU-Net
-```
-export nnUNet_raw="./workspace/nnUNet_raw"
-export nnUNet_preprocessed="./workspace/nnUNet_preprocessed"
-export nnUNet_results="./workspace/nnUNet_results"
-```
+1.  **Download the Dataset:**
+    Acquire the dataset by following the instructions provided at the PANORAMA Grand Challenge [dataset link](https://panorama.grand-challenge.org/datasets-imaging-labels/).
 
-#### To test our model, run:
-```
-python main.py -i ${INPUT_DIR} -o ${OUTPUT_DIR} --inv_alpha ${INV_ALPHA}
-```
-where:
-- `${INPUT_DIR}`  is the directory containing your input images (e.g., nii.gz, mhd, mha, etc).
-- `${OUTPUT_DIR}` is the directory where the prediction will be saved.
-- `${INV_ALPHA}`  controls the expansion of the predicted lesion (larger values predict larger lesions); default=`15`.
+2.  **Organize Dataset Files:**
+    Place the downloaded dataset into the following directory structure within your `PDAC_Detection` project folder (you may need to create these directories if they don't exist):
+    * **Training Images:**
+        `workspace/nnUNet_raw/Dataset107_PDAC_detection/imagesTr/`
+    * **Training Labels:**
+        `workspace/nnUNet_raw/Dataset107_PDAC_detection/labelsTr/`
 
-#### For a quick test using the example testing images, run:
-```
-python main.py -i ./workspace/test_example/input -o ./workspace/test_example/output
-```
+3.  **Create Additional Required Directories:**
+    Ensure the following directories are also present for nnU-Net's operation:
+    * `workspace/nnUNet_preprocessed/`
+    * `workspace/nnUNet_results/`
 
-#### What are the outputs?
-- PDAC detection map (ranging from 0-1) where each predicted lesion is assigned a confidence score.
-- Patient-level likelihood score (computed as the **maximum** value of the detection map)
+## Preprocessing
+The nnU-Net framework typically involves a preprocessing step to prepare the raw data.
 
-The PDAC detection maps are saved under `${OUTPUT_DIR}/pdac-detection-map`:
-```
-├── ${OUTPUT_DIR}/
-    ├── pdac-likelihood.json
-    └── pdac-detection-map/
-        ├── filename1.nii.gz
-        ├── filename2.nii.gz
-        └── ...
-```
+1.  **Run the preprocessing script:**
+    ```bash
+    # TODO: Insert the command for running the preprocessing script here.
+    # Example: nnUNetv2_plan_and_preprocess -d 107 --verify_dataset_integrity
+    ```
+    *Giedrius, please note that the command for the preprocessing script was missing in the original README. You'll need to add the specific nnU-Net command here (the example above is a common one, but verify the correct command for your setup).*
 
-The `pdac-likelihood.json` contains the likelihood scores for each patient:
-```
-{
-    "filename1": 0.9965946078300476,
-    "filename2": 0.9977765679359436,
-    ...
-}
-```
+## Training
+Once the dataset is prepared and preprocessed, you can proceed with model training.
 
-### Acknowledgement
-This code is built upon the following works. We gratefully acknowledge their contribution and encourage users to cite their original work:
-1. Isensee, Fabian, et al. "nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation." Nature methods
-2. Bosma, Joeran S, et al. "Semi-supervised learning with report-guided pseudo labels for deep learning–based prostate cancer detection using biparametric MRI." Radiology AI
-3. Alves, Natália,  et al. "Fully automatic deep learning framework for pancreatic ductal adenocarcinoma detection on computed tomography." Cancers
+1.  **Run the training script:**
+    This command initiates training using the 3D full-resolution configuration with the custom `nnUNetTrainerV2_ResEnc_TverskyLoss` for dataset 107. The `--npz` flag indicates that the preprocessed data is saved in `.npz` format.
+    ```bash
+    nnUNetv2_train 3d_fullres nnUNetTrainerV2_ResEnc_TverskyLoss 107 --npz
+    ```
+
+## Testing
+To evaluate the trained model, use the provided testing script.
+
+1.  **Run the testing script:**
+    ```bash
+    ./tversky_test.sh
+    ```
