@@ -34,11 +34,11 @@ It is highly recommended to create a dedicated virtual environment to manage pro
 
 1.  **Create a Conda virtual environment:**
     ```bash
-    conda create --name pdac python=3.12 -y
+    conda create --name pdac_tversky python=3.12 -y
     ```
 2.  **Activate the virtual environment:**
     ```bash
-    conda activate pdac
+    conda activate pdac_tversky
     ```
 
 ### Cloning the Repository
@@ -48,7 +48,7 @@ It is highly recommended to create a dedicated virtual environment to manage pro
     ```
 2.  **Navigate to the cloned directory:**
     ```bash
-    cd PDAC_Detection
+    cd PDAC_Detection_forked
     ```
 
 ### Installing Dependencies
