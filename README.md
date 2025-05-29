@@ -24,7 +24,7 @@ The primary objective of this model is to advance the accuracy of PDAC segmentat
 Ensure your system meets the following requirements before proceeding with the installation:
 * **CUDA:** Version 12.1
 * **cuDNN:** Version 9.0
-* **Python:** Version 3.12
+* **Python:** Version 3.10
 
 ## Installation
 
@@ -33,7 +33,7 @@ It is highly recommended to create a dedicated virtual environment to manage pro
 
 1.  **Create a Conda virtual environment:**
     ```bash
-    conda create --name pdac_tversky python=3.12 -y
+    conda create --name pdac_tversky python=3.10 -y
     ```
 2.  **Activate the virtual environment:**
     ```bash
