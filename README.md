@@ -18,7 +18,7 @@
 This repository provides the codebase and associated resources for the segmentation of Pancreatic Ductal Adenocarcinoma (PDAC). The methodology employs a modified nnU-Net architecture, incorporating Residual Encoder (ResEnc) blocks and utilizing a Tversky loss function.
 
 ## Project Aim
-The primary objective of this model is to advance the accuracy of PDAC segmentation in medical imaging. A specific focus is placed on reducing the False Positive rates observed in the segmentation results reported by Liu et al. (2025) [1].
+The primary objective of this model is to advance the accuracy of PDAC segmentation in medical imaging. A specific focus is placed on reducing the False Positive rates observed in the segmentation results reported by Liu et al. (2025)<sup>[1]</sup>.
 
 ## Prerequisites
 Ensure your system meets the following requirements before proceeding with the installation:
