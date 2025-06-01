@@ -104,8 +104,9 @@ Once the dataset is prepared and preprocessed, you can proceed with model traini
 
 ## Testing
 To evaluate the trained model, use the provided testing script.
-
-1.  **Run the testing script:**
+1.  **Create testing folders:**
+    In the `workspace` directory, create `test/imageTs` and `test/labelsTs` directories and put some CEST pancreas scans in the `imagesTs` folder.
+2.  **Run the testing script:**
     ```bash
     ./tversky_test.sh
     ```
