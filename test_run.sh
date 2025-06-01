@@ -22,12 +22,14 @@ else
 fi
 
 
-echo "=+= (Re)build the container"
-docker build "$SCRIPT_DIR" \
-  --no-cache \
-  --platform=linux/amd64 \
-  --tag $DOCKER_TAG 2>&1 | tee build.log
-
+if ! docker image inspect "$DOCKER_TAG" >/dev/null 2>&1; then
+  echo "=+= Image not found, building $DOCKER_TAG"
+  docker build "$SCRIPT_DIR" \
+      --platform=linux/amd64 \
+      --tag $DOCKER_TAG
+else
+  echo "=+= Re-using existing image $DOCKER_TAG"
+fi
 
 echo "=+= Doing a forward pass"
 ## Note the extra arguments that are passed here:
@@ -46,7 +48,7 @@ docker run --rm \
     --volume "$OUTPUT_DIR":/output \
     --volume "$DOCKER_NOOP_VOLUME":/tmp \
     $DOCKER_TAG \
-    -i /input/ \    # <--- Add this
+    -i /input/ \
     -o /output/
 docker volume rm "$DOCKER_NOOP_VOLUME"
 
