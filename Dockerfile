@@ -67,10 +67,15 @@ RUN cd /opt/algorithm/report-guided-annotation && \
     cd /
 
 RUN mkdir -p /opt/algorithm/nnunet/nnunetv2/training/nnUNetTrainer/variants/loss/
-COPY --chown=user:user ./packages/nnunetv2/nnunetv2/training/nnUNetTrainer/variants/loss/nnUNetTrainerCELoss.py /opt/algorithm/nnunet/nnunetv2/training/nnUNetTrainer/variants/loss/nnUNetTrainerCELoss.py
+RUN mkdir -p /opt/algorithm/nnunet/nnunetv2/training/loss/
+COPY --chown=user:user \
+     ./packages/nnunetv2/nnunetv2/training/loss/tversky.py \
+     /opt/algorithm/nnunet/nnunetv2/training/loss/tversky.py
+
+COPY --chown=user:user ./packages/nnunetv2/nnunetv2/training/nnUNetTrainer/variants/loss/nnUNetTrainerTverskyLoss.py /opt/algorithm/nnunet/nnunetv2/training/nnUNetTrainer/variants/loss/nnUNetTrainerTverskyLoss.py
 
 COPY --chown=user:user ./workspace/nnUNet_results/ /opt/algorithm/nnunet/nnUNet_results/
-
+COPY --chown=user:user ./workspace/nnUNet_raw/ /opt/algorithm/nnunet/nnUNet_raw/
 ### Define workdir
 WORKDIR /opt/app
 COPY --chown=user:user ./main.py /opt/app/main.py
