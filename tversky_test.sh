@@ -43,7 +43,6 @@ echo "Main output directory: $MAIN_OUTPUT_DIR"
 echo "Batch size: $BATCH_SIZE"
 echo "-------------------------------------------"
 
-# Find all .nii.gz files and store them in an array
 mapfile -t all_files < <(find "$SOURCE_DATA_DIR" -type f -name "*.nii.gz")
 
 num_files=${#all_files[@]}
@@ -53,31 +52,25 @@ num_batches=$(( (num_files + BATCH_SIZE - 1) / BATCH_SIZE ))
 echo "Total batches to run: $num_batches"
 echo "==========================================="
 
-# Loop through all files with a step size equal to the batch size
 for (( i=0; i<$num_files; i+=BATCH_SIZE )); do
     current_batch_num=$(( i / BATCH_SIZE + 1 ))
     echo "Processing Batch $current_batch_num of $num_batches..."
 
-    # Create a unique output directory for this batch
     BATCH_OUTPUT_DIR="$MAIN_OUTPUT_DIR/batch_${current_batch_num}"
     mkdir -p "$BATCH_OUTPUT_DIR"
     echo "Output for this batch will be saved in: $BATCH_OUTPUT_DIR"
 
-    # Get a slice of the array for the current batch
     batch=("${all_files[@]:i:BATCH_SIZE}")
 
-    # Copy the files for the current batch into the processing directory
     for file in "${batch[@]}"; do
         cp "$file" "$BATCH_PROCESSING_DIR/"
     done
 
-    # --- Run Inference on the BATCH directory ---
     echo "Running inference on ${#batch[@]} files..."
     python -m main_tversky -i "$BATCH_PROCESSING_DIR" -o "$BATCH_OUTPUT_DIR" -m $PWD/tversky_workspace/nnUNet_results
 
     echo "-------------------------------------------"
 
-    # Clean the temporary processing directory for the next iteration
     echo "Cleaning up temporary processing directory..."
     rm -f "$BATCH_PROCESSING_DIR"/*
 done
