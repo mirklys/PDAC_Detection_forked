@@ -127,7 +127,7 @@ def crop_roi(img_dir, low_msk_dir, save_img_dir, margins=[100, 50, 15]):
 
 def predict(nnunet_model_dir, input_dir, output_dir, task:int, trainer:str="nnUNetTrainer", plan:str="nnUNetPlans",
             configuration="3d_fullres", checkpoint="checkpoint_final.pth", 
-            folds="0,1,2,3,4", store_probability_maps=True, tta=True):
+            folds="0", store_probability_maps=True, tta=True):
 
     os.environ['RESULTS_FOLDER'] = str(nnunet_model_dir)
     cmd = [
@@ -221,7 +221,7 @@ def run(args):
     # Step 1: downsample the dataset 
     print("Step 1/4: downsample the input image...")
     low_image_folder = osp.join(working_folder, 'LowImagesTr')
-    # downsample_panorama_dataset(image_folder, low_image_folder)
+    downsample_panorama_dataset(image_folder, low_image_folder)
 
     # Step 2: inference on low resolution images using nnU-Net
     print("Step 2/4: predict on the low-resolution images...")
@@ -230,11 +230,8 @@ def run(args):
         nnunet_model_dir=args.model_dir, 
         input_dir=low_image_folder, 
         output_dir=low_pred_folder,
-        trainer="nnUNetTrainerCELossLesionSplit",
         checkpoint="checkpoint_final.pth",
-        plan="nnUNetPlans_v3",
-        folds="0",
-        task=107)
+        task=103)
 
     # Step 3: crop high resolution ROI
     print("Step 3/4: crop the ROI from the high-resolution image...")
