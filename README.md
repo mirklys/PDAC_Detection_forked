@@ -97,7 +97,7 @@ The nnU-Net framework typically involves a preprocessing step to prepare the raw
 Once the dataset is prepared and preprocessed, you can proceed with model training.
 
 1.  **Run the training script:**
-    This command initiates training using the 3D full-resolution configuration with the custom `nnUNetTrainerV2_ResEnc_TverskyLoss` for dataset 107. The `--npz` flag indicates that the preprocessed data is saved in `.npz` format.
+    This command initiates training using the 3D full-resolution configuration with the custom `nnUNetTrainerTverskyLoss` for dataset 107. The `--npz` flag indicates that the preprocessed data is saved in `.npz` format.
     ```bash
     nnUNetv2_train 107 3d_fullres 0 -tr nnUNetTrainerTverskyLoss --c --npz
     ```
