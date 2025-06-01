@@ -6,16 +6,16 @@ from report_guided_annotation import extract_pirads_scores
 def test_parse_report():
     # define scores found in the radiology reports (verified manually)
     expected_results = {
-        'sample_1.txt': [
-            (1, {'T2W': '3', 'DWI': '5', 'DCE': '+', 'tot': 5}),
-            (2, {'T2W': '2', 'DWI': '2', 'DCE': '+', 'tot': 2})
+        "sample_1.txt": [
+            (1, {"T2W": "3", "DWI": "5", "DCE": "+", "tot": 5}),
+            (2, {"T2W": "2", "DWI": "2", "DCE": "+", "tot": 2}),
         ],
-        'sample_2.txt': [
-            (1, {'T2W': '5', 'DWI': '5', 'DCE': '+', 'tot': 5}),
-            (2, {'T2W': '5', 'DWI': '5', 'DCE': '+', 'tot': 5})
+        "sample_2.txt": [
+            (1, {"T2W": "5", "DWI": "5", "DCE": "+", "tot": 5}),
+            (2, {"T2W": "5", "DWI": "5", "DCE": "+", "tot": 5}),
         ],
-        'sample_3.txt': [
-            (1, {'T2W': '4', 'DWI': '4', 'DCE': '+', 'tot': 4}),
+        "sample_3.txt": [
+            (1, {"T2W": "4", "DWI": "4", "DCE": "+", "tot": 4}),
         ],
     }
 
@@ -40,7 +40,9 @@ def test_parse_report():
 
         # verify extracted scores
         expected_res = expected_results[report_fn]
-        for (expected_lesion_id, expected_scores), (lesion_id, scores) in zip(expected_res, res):
+        for (expected_lesion_id, expected_scores), (lesion_id, scores) in zip(
+            expected_res, res
+        ):
             assert expected_lesion_id == lesion_id
             for key, score in expected_scores.items():
                 assert score == scores[key]

@@ -1,8 +1,8 @@
 from __future__ import absolute_import
 from report_guided_annotation.create_automatic_annotations import (
-      create_automatic_annotations_from_softmax,
-      create_automatic_annotations,
-      create_automatic_annotations_for_folder,
+    create_automatic_annotations_from_softmax,
+    create_automatic_annotations,
+    create_automatic_annotations_for_folder,
 )
 from report_guided_annotation.parse_report import extract_pirads_scores
 from report_guided_annotation.extract_lesion_candidates import extract_lesion_candidates
@@ -13,10 +13,10 @@ from report_guided_annotation.extract_lesion_candidates import extract_lesion_ca
 # print("If you have questions or suggestions, feel free to open an issue at https://github.com/DIAGNijmegen/Report-Guided-Annotation\n")
 
 __all__ = [
-      # explicitly expose these functions
-      "create_automatic_annotations_from_softmax",
-      "create_automatic_annotations",
-      "create_automatic_annotations_for_folder",
-      "extract_pirads_scores",
-      "extract_lesion_candidates",
+    # explicitly expose these functions
+    "create_automatic_annotations_from_softmax",
+    "create_automatic_annotations",
+    "create_automatic_annotations_for_folder",
+    "extract_pirads_scores",
+    "extract_lesion_candidates",
 ]

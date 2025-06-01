@@ -25,7 +25,8 @@ class FocalLoss(nn.Module):
     """
     Focal Loss for multi-class classification.
     """
-    def __init__(self, gamma=2.0, alpha=None, reduction='mean'):
+
+    def __init__(self, gamma=2.0, alpha=None, reduction="mean"):
         """
         Args:
             gamma (float): Focusing parameter. Default is 2.0.
@@ -46,7 +47,7 @@ class FocalLoss(nn.Module):
         # Convert logits to probabilities
         log_probs = F.log_softmax(input, dim=1)
         probs = log_probs.exp()
-        
+
         # Gather the probabilities of the true classes
         target = target.long()
         true_probs = probs.gather(1, target.unsqueeze(1)).squeeze(1)
@@ -64,9 +65,9 @@ class FocalLoss(nn.Module):
         focal_loss = -focal_weight * log_true_probs
 
         # Apply reduction
-        if self.reduction == 'mean':
+        if self.reduction == "mean":
             return focal_loss.mean()
-        elif self.reduction == 'sum':
+        elif self.reduction == "sum":
             return focal_loss.sum()
         else:
             return focal_loss
@@ -74,17 +75,20 @@ class FocalLoss(nn.Module):
 
 class nnUNetTrainer_WFocalLoss(nnUNetTrainer):
     def _build_loss(self):
-        assert not self.label_manager.has_regions, 'regions not supported by this trainer'
-        loss = FocalLoss(gamma=2.0, alpha=torch.tensor([1.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0]))
+        assert (
+            not self.label_manager.has_regions
+        ), "regions not supported by this trainer"
+        loss = FocalLoss(
+            gamma=2.0, alpha=torch.tensor([1.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+        )
         deep_supervision_scales = self._get_deep_supervision_scales()
 
         # we give each output a weight which decreases exponentially (division by 2) as the resolution decreases
         # this gives higher resolution outputs more weight in the loss
-        weights = np.array([1 / (2 ** i) for i in range(len(deep_supervision_scales))])
+        weights = np.array([1 / (2**i) for i in range(len(deep_supervision_scales))])
 
         # we don't use the lowest 2 outputs. Normalize weights so that they sum to 1
         weights = weights / weights.sum()
         # now wrap the loss
         loss = DeepSupervisionWrapper(loss, weights)
         return loss
-

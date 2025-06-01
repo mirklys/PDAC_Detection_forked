@@ -6,21 +6,36 @@ import argparse
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-i", "--input_folder", type=str, help="The input dataset folder. should contain 'ImageTr', 'LabelTr', 'ImageTs'")
-parser.add_argument("-id", "--dataset_id", required=True, type=int, help="nnU-Net Dataset ID")
-parser.add_argument("-n", "--dataset_name", required=True, type=str, help="nnU-Net Dataset name")
+parser.add_argument(
+    "-i",
+    "--input_folder",
+    type=str,
+    help="The input dataset folder. should contain 'ImageTr', 'LabelTr', 'ImageTs'",
+)
+parser.add_argument(
+    "-id", "--dataset_id", required=True, type=int, help="nnU-Net Dataset ID"
+)
+parser.add_argument(
+    "-n", "--dataset_name", required=True, type=str, help="nnU-Net Dataset name"
+)
 args = parser.parse_args()
 
 
-def generate_dataset_json(output_folder: str,
-                          channel_names: dict,
-                          labels: dict,
-                          num_training_cases: int,
-                          file_ending: str,
-                          regions_class_order: Tuple[int, ...] = None,
-                          dataset_name: str = None, reference: str = None, release: str = None, license: str = None,
-                          description: str = None,
-                          overwrite_image_reader_writer: str = None, **kwargs):
+def generate_dataset_json(
+    output_folder: str,
+    channel_names: dict,
+    labels: dict,
+    num_training_cases: int,
+    file_ending: str,
+    regions_class_order: Tuple[int, ...] = None,
+    dataset_name: str = None,
+    reference: str = None,
+    release: str = None,
+    license: str = None,
+    description: str = None,
+    overwrite_image_reader_writer: str = None,
+    **kwargs,
+):
     """
     Generates a dataset.json file in the output folder
 
@@ -64,10 +79,14 @@ def generate_dataset_json(output_folder: str,
     kwargs: whatever you put here will be placed in the dataset.json as well
 
     """
-    has_regions: bool = any([isinstance(i, (tuple, list)) and len(i) > 1 for i in labels.values()])
+    has_regions: bool = any(
+        [isinstance(i, (tuple, list)) and len(i) > 1 for i in labels.values()]
+    )
     if has_regions:
-        assert regions_class_order is not None, f"You have defined regions but regions_class_order is not set. " \
-                                                f"You need that."
+        assert regions_class_order is not None, (
+            f"You have defined regions but regions_class_order is not set. "
+            f"You need that."
+        )
     # channel names need strings as keys
     keys = list(channel_names.keys())
     for k in keys:
@@ -85,41 +104,38 @@ def generate_dataset_json(output_folder: str,
             labels[l] = int(labels[l])
 
     dataset_json = {
-        'channel_names': channel_names,
-        'labels': labels,
-        'numTraining': num_training_cases,
-        'file_ending': file_ending,
+        "channel_names": channel_names,
+        "labels": labels,
+        "numTraining": num_training_cases,
+        "file_ending": file_ending,
     }
 
     if dataset_name is not None:
-        dataset_json['name'] = dataset_name
+        dataset_json["name"] = dataset_name
     if reference is not None:
-        dataset_json['reference'] = reference
+        dataset_json["reference"] = reference
     if release is not None:
-        dataset_json['release'] = release
+        dataset_json["release"] = release
     if license is not None:
-        dataset_json['licence'] = license
+        dataset_json["licence"] = license
     if description is not None:
-        dataset_json['description'] = description
+        dataset_json["description"] = description
     if overwrite_image_reader_writer is not None:
-        dataset_json['overwrite_image_reader_writer'] = overwrite_image_reader_writer
+        dataset_json["overwrite_image_reader_writer"] = overwrite_image_reader_writer
     if regions_class_order is not None:
-        dataset_json['regions_class_order'] = regions_class_order
+        dataset_json["regions_class_order"] = regions_class_order
 
     dataset_json.update(kwargs)
-    save_json(dataset_json, join(output_folder, 'dataset.json'), sort_keys=False)
+    save_json(dataset_json, join(output_folder, "dataset.json"), sort_keys=False)
 
 
 if __name__ == "__main__":
 
     print("Converting...")
     generate_dataset_json(
-        osp.join(nnUNet_raw, f'Dataset{args.dataset_id:03d}_{args.dataset_name}'),
+        osp.join(nnUNet_raw, f"Dataset{args.dataset_id:03d}_{args.dataset_name}"),
         channel_names={0: "MR"},
-        labels={
-            "background": 0,
-            "Cochlea": 3
-        },
+        labels={"background": 0, "Cochlea": 3},
         file_ending=".nii.gz",
         num_training_cases=285,
     )

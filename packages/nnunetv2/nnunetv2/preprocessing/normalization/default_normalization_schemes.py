@@ -8,8 +8,12 @@ from numpy import number
 class ImageNormalization(ABC):
     leaves_pixels_outside_mask_at_zero_if_use_mask_for_norm_is_true = None
 
-    def __init__(self, use_mask_for_norm: bool = None, intensityproperties: dict = None,
-                 target_dtype: Type[number] = np.float32):
+    def __init__(
+        self,
+        use_mask_for_norm: bool = None,
+        intensityproperties: dict = None,
+        target_dtype: Type[number] = np.float32,
+    ):
         assert use_mask_for_norm is None or isinstance(use_mask_for_norm, bool)
         self.use_mask_for_norm = use_mask_for_norm
         assert isinstance(intensityproperties, dict)
@@ -53,12 +57,14 @@ class CTNormalization(ImageNormalization):
     leaves_pixels_outside_mask_at_zero_if_use_mask_for_norm_is_true = False
 
     def run(self, image: np.ndarray, seg: np.ndarray = None) -> np.ndarray:
-        assert self.intensityproperties is not None, "CTNormalization requires intensity properties"
+        assert (
+            self.intensityproperties is not None
+        ), "CTNormalization requires intensity properties"
         image = image.astype(self.target_dtype)
-        mean_intensity = self.intensityproperties['mean']
-        std_intensity = self.intensityproperties['std']
-        lower_bound = self.intensityproperties['percentile_00_5']
-        upper_bound = self.intensityproperties['percentile_99_5']
+        mean_intensity = self.intensityproperties["mean"]
+        std_intensity = self.intensityproperties["std"]
+        lower_bound = self.intensityproperties["percentile_00_5"]
+        upper_bound = self.intensityproperties["percentile_99_5"]
         image = np.clip(image, lower_bound, upper_bound)
         image = (image - mean_intensity) / max(std_intensity, 1e-8)
         return image
@@ -85,11 +91,14 @@ class RGBTo01Normalization(ImageNormalization):
     leaves_pixels_outside_mask_at_zero_if_use_mask_for_norm_is_true = False
 
     def run(self, image: np.ndarray, seg: np.ndarray = None) -> np.ndarray:
-        assert image.min() >= 0, "RGB images are uint 8, for whatever reason I found pixel values smaller than 0. " \
-                                 "Your images do not seem to be RGB images"
-        assert image.max() <= 255, "RGB images are uint 8, for whatever reason I found pixel values greater than 255" \
-                                   ". Your images do not seem to be RGB images"
+        assert image.min() >= 0, (
+            "RGB images are uint 8, for whatever reason I found pixel values smaller than 0. "
+            "Your images do not seem to be RGB images"
+        )
+        assert image.max() <= 255, (
+            "RGB images are uint 8, for whatever reason I found pixel values greater than 255"
+            ". Your images do not seem to be RGB images"
+        )
         image = image.astype(self.target_dtype)
-        image = image / 255.
+        image = image / 255.0
         return image
-

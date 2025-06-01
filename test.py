@@ -67,7 +67,7 @@ def create_tester_shell_script(
 
 CONDA_BASE_DIR=$(conda info --base)
 source "${CONDA_BASE_DIR}/etc/profile.d/conda.sh"
-conda activate pdac_tversky \n""" ### WRITE YOUR ENVIRONEMNT
+conda activate pdac_tversky \n"""  ### WRITE YOUR ENVIRONEMNT
         )
         f.write(f"export nnUNet_raw={env_vars['nnUNet_raw']}\n")
         f.write(f"export nnUNet_preprocessed={env_vars['nnUNet_preprocessed']}\n")
@@ -89,6 +89,7 @@ def run_test(env_vars: dict, data_folder: str, bash_test_name: str):
     move_images_to_test(images)
     create_tester_shell_script(TEST_FOLDER, env_vars, output_file=bash_test_name)
     # subprocess.run([os.path.join(ROOT_FOLDER, bash_test_name)])
+
 
 if __name__ == "__main__":
     env_vars = {

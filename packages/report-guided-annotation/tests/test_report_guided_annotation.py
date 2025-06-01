@@ -17,13 +17,16 @@ def test_create_automatic_labels_for_folder():
     create_automatic_annotations_for_folder(
         input_dir=input_dir,
         output_dir=output_dir,
-        threshold='dynamic',
+        threshold="dynamic",
         skip_if_insufficient_lesions=True,
         num_workers=4,
     )
 
     # verify generated annotations exist
-    assert os.path.exists(output_dir / "ProstateX-0000_07-07-2011-NA-MR prostaat kanker detectie WDSmc MCAPRODETW-05711.nii.gz")
+    assert os.path.exists(
+        output_dir
+        / "ProstateX-0000_07-07-2011-NA-MR prostaat kanker detectie WDSmc MCAPRODETW-05711.nii.gz"
+    )
 
     # read number of lesions there should be
     with open(input_dir / "num_lesions_to_retain_map.json") as fp:

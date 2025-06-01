@@ -5,34 +5,40 @@ import SimpleITK as sitk
 from report_guided_annotation import extract_lesion_candidates
 
 
-@pytest.mark.parametrize("dtype", [
-    np.bool_,
-    np.byte,
-    np.ubyte,
-    np.short,
-    np.ushort,
-    np.intc,
-    np.uintc,
-    np.int_,
-    np.uint,
-    np.longlong,
-    np.ulonglong,
-    np.float16,
-    np.single,
-    np.double,
-    np.longdouble,
-])
+@pytest.mark.parametrize(
+    "dtype",
+    [
+        np.bool_,
+        np.byte,
+        np.ubyte,
+        np.short,
+        np.ushort,
+        np.intc,
+        np.uintc,
+        np.int_,
+        np.uint,
+        np.longlong,
+        np.ulonglong,
+        np.float16,
+        np.single,
+        np.double,
+        np.longdouble,
+    ],
+)
 def test_lesion_candidate_extraction_dtypes(dtype):
     softmax = np.zeros((3, 3, 3), dtype=dtype)
     extract_lesion_candidates(softmax)
 
 
 @pytest.mark.xfail
-@pytest.mark.parametrize("dtype", [
-    np.csingle,
-    np.cdouble,
-    np.clongdouble,
-])
+@pytest.mark.parametrize(
+    "dtype",
+    [
+        np.csingle,
+        np.cdouble,
+        np.clongdouble,
+    ],
+)
 def test_lesion_candidate_extraction_dtypes_xfail(dtype):
     softmax = np.zeros((3, 3, 3), dtype=dtype)
     extract_lesion_candidates(softmax)
@@ -51,13 +57,13 @@ def test_lesion_candidate_extraction_dynamic_edge_case():
     """
 
     # load prediction
-    pred = sitk.ReadImage('tests/input/dynamic_extraction_edge_case.mha')
+    pred = sitk.ReadImage("tests/input/dynamic_extraction_edge_case.mha")
     pred = sitk.GetArrayFromImage(pred)
 
     # extract lesion candidates
     hard_blobs, confidences, blobs_index = extract_lesion_candidates(
         softmax=pred,
-        threshold='dynamic-v2',
+        threshold="dynamic-v2",
     )
 
     # check output

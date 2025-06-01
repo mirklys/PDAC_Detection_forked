@@ -15,7 +15,7 @@ def extract_pirads_scores(
     conclusion_fallback_missing_pirads: bool = False,
     ignore_conclusion: bool = False,
     flatten_report: bool = False,
-    verbose: int = 1
+    verbose: int = 1,
 ) -> List[Tuple[int, Dict[str, Union[str, int, None]]]]:
     """
     Extract PI-RADS scores from radiology report.
@@ -101,10 +101,18 @@ def extract_pirads_scores(
             raise Exception(f"No match for report {report}")
         else:
             if report_snippets[0][0] == 0:
-                print("Report not splitted in snippets, working on full report") if verbose >= 2 else None
+                (
+                    print("Report not splitted in snippets, working on full report")
+                    if verbose >= 2
+                    else None
+                )
                 report_split_in_snippets = False
             else:
-                print(f"Found {len(report_snippets)} report snippets") if verbose >= 2 else None
+                (
+                    print(f"Found {len(report_snippets)} report snippets")
+                    if verbose >= 2
+                    else None
+                )
                 report_split_in_snippets = True
 
         # extract scores
@@ -112,20 +120,32 @@ def extract_pirads_scores(
             if lesion_number > 0:
                 assert report_split_in_snippets
                 # found numbered lesion sections
-                scores_lesion = extract_pirads_scores_from_lesion_section(section_text, verbose=verbose)
+                scores_lesion = extract_pirads_scores_from_lesion_section(
+                    section_text, verbose=verbose
+                )
                 results += [(lesion_number, scores_lesion)]
             else:
                 assert not report_split_in_snippets and lesion_number == 0
                 # did not found numbered sections, look for multiple scores in the same section
-                scores = extract_all_scores_from_full_report(report, subject_id=subject_id, strict=strict,
-                                                             aggressive=aggressive, verbose=verbose)
+                scores = extract_all_scores_from_full_report(
+                    report,
+                    subject_id=subject_id,
+                    strict=strict,
+                    aggressive=aggressive,
+                    verbose=verbose,
+                )
                 results += scores
 
         # determine extraction type (up to this point)
         if report_split_in_snippets:
             if len(results):
                 # check if all results have final PI-RADS
-                if any([scores['tot'] is None or np.isnan(float(scores['tot'])) for i, scores in results]):
+                if any(
+                    [
+                        scores["tot"] is None or np.isnan(float(scores["tot"]))
+                        for i, scores in results
+                    ]
+                ):
                     extraction_type = 0
                 else:
                     extraction_type = 1
@@ -137,29 +157,35 @@ def extract_pirads_scores(
             else:
                 extraction_type = 4
 
-    empty_or_nan = (len(results) == 0) or any([s['tot'] is None or np.isnan(float(s['tot'])) for i, s in results])
-    if (not results and conclusion_fallback) or conclusion_only or (empty_or_nan and conclusion_fallback_missing_pirads):
+    empty_or_nan = (len(results) == 0) or any(
+        [s["tot"] is None or np.isnan(float(s["tot"])) for i, s in results]
+    )
+    if (
+        (not results and conclusion_fallback)
+        or conclusion_only
+        or (empty_or_nan and conclusion_fallback_missing_pirads)
+    ):
         # search for PI-RADS scores in the conclusion
-        if 'Impressie:' in original_report:
+        if "Impressie:" in original_report:
             conclusion = original_report.split("Impressie:")[-1]
 
             # extract total scores
             for pattern in [
-                fr'PI-?RADS v2 categorie{allowed_separators}{PIRADS_pattern}',
-                fr'PI-?RADS v2 category{allowed_separators}{PIRADS_pattern}',
-                fr'PI-?RADS{allowed_separators}{PIRADS_pattern}',
+                rf"PI-?RADS v2 categorie{allowed_separators}{PIRADS_pattern}",
+                rf"PI-?RADS v2 category{allowed_separators}{PIRADS_pattern}",
+                rf"PI-?RADS{allowed_separators}{PIRADS_pattern}",
             ]:
                 matches = re.finditer(pattern, conclusion)
                 for lesion_number, match in enumerate(matches):
-                    scores_lesion = {'tot': pirads_score_map[match.group("PIRADS")]}
-                    scores_lesion['tot_pattern'] = 'conclusion'
+                    scores_lesion = {"tot": pirads_score_map[match.group("PIRADS")]}
+                    scores_lesion["tot_pattern"] = "conclusion"
                     results += [(lesion_number, scores_lesion)]
 
                     extraction_type = 5
 
     # encode extraction type in scores
     for lesion_number, scores_lesion in results:
-        scores_lesion['extraction_type'] = extraction_type
+        scores_lesion["extraction_type"] = extraction_type
 
     return results
 
@@ -168,7 +194,7 @@ def extract_lesion_sections(
     report: str,
     ignore_conclusion: bool = True,
     remove_measurements: bool = True,
-    verbose=1
+    verbose=1,
 ) -> List[Tuple[int, str]]:
     """
     Try to split the report is separate sections for each lesion. Many reports allow simple splitting
@@ -225,10 +251,14 @@ def extract_lesion_sections(
         report = re.sub(r"\d+ *cc", "[removed]", report)
 
     # search for sections
-    at_least_one_number = r'(?P<num1>\d+)\+?(?P<num2>\d+)?\+?(?P<num3>\d+)?\+?(?P<num4>\d+)?'
-    optional_nr_mark = r' *(nr\.?)? *(mark)? *((in)? nummer)? *'
-    prefix_pattern = "|".join(('Afwijking', 'Index laesie', 'Markering', 'Regio', 'Laesie', 'Lesion index'))
-    pattern = f'({prefix_pattern}):?{optional_nr_mark}{at_least_one_number}'
+    at_least_one_number = (
+        r"(?P<num1>\d+)\+?(?P<num2>\d+)?\+?(?P<num3>\d+)?\+?(?P<num4>\d+)?"
+    )
+    optional_nr_mark = r" *(nr\.?)? *(mark)? *((in)? nummer)? *"
+    prefix_pattern = "|".join(
+        ("Afwijking", "Index laesie", "Markering", "Regio", "Laesie", "Lesion index")
+    )
+    pattern = f"({prefix_pattern}):?{optional_nr_mark}{at_least_one_number}"
 
     # detect lesion sections
     matches = list(re.finditer(pattern, report, re.IGNORECASE))
@@ -236,22 +266,24 @@ def extract_lesion_sections(
     # verbose
     if verbose >= 2:
         for match in matches:
-            report_snippet = report[slice(max(0, match.span()[0]-40), match.span()[1]+40)]
-            report_snippet = report_snippet.replace('\n', r'\\n')
+            report_snippet = report[
+                slice(max(0, match.span()[0] - 40), match.span()[1] + 40)
+            ]
+            report_snippet = report_snippet.replace("\n", r"\\n")
             print(f"section from: {report_snippet}")
 
     if len(matches):
         # return start of match to start of next match (or end of report)
         report_snippets = []
         for i, match in enumerate(matches):
-            if (i+1) < len(matches):
-                report_snippet = report[match.span()[0]:matches[i+1].span()[0]]
+            if (i + 1) < len(matches):
+                report_snippet = report[match.span()[0] : matches[i + 1].span()[0]]
             else:
-                report_snippet = report[match.span()[0]:]
+                report_snippet = report[match.span()[0] :]
 
             # add report snippet for lesion number
             # also allow multiple lesions, as in 'Markering nr. 1+2'
-            for key in [f'num{i}' for i in (1, 2, 3, 4)]:
+            for key in [f"num{i}" for i in (1, 2, 3, 4)]:
                 if match.group(key) is not None:
                     lesion_number = int(match.group(key))
                     report_snippets += [(lesion_number, report_snippet)]
@@ -260,11 +292,11 @@ def extract_lesion_sections(
         for i, res in enumerate(report_snippets):
             if i == 0:
                 continue
-            if res[0] == report_snippets[i-1][0]:
+            if res[0] == report_snippets[i - 1][0]:
                 # lesion index is the same
                 if verbose >= 2:
                     print(f"Changing index lesion numbering for {report}")
-                    print("="*50)
+                    print("=" * 50)
                 elif verbose == 1:
                     print("Changing index lesion numbering")
                 report_snippets[i] = (report_snippets[i][0] + 1, report_snippets[i][1])
@@ -275,76 +307,75 @@ def extract_lesion_sections(
 
 
 def extract_pirads_scores_from_lesion_section(
-    report_snippet: str,
-    verbose: int = 1
+    report_snippet: str, verbose: int = 1
 ) -> Dict[str, Union[str, int, None]]:
     scores: Dict[str, Union[str, int, None]] = {
-        'T2W': None,
-        'DWI': None,
-        'DCE': None,
-        'tot': None,
-        'T2W_pattern': None,
-        'DWI_pattern': None,
-        'DCE_pattern': None,
-        'tot_pattern': None,
+        "T2W": None,
+        "DWI": None,
+        "DCE": None,
+        "tot": None,
+        "T2W_pattern": None,
+        "DWI_pattern": None,
+        "DCE_pattern": None,
+        "tot_pattern": None,
     }
 
     # extract T2W score
     for pattern in [
-        r'S?core.? T2?[wW]?: *([1-5])',
-        r'T2W/DWI/DCE score: *([1-5])/.{1,5}/[+\-xX]',
-        r'T2W?: *([1-5])',
+        r"S?core.? T2?[wW]?: *([1-5])",
+        r"T2W/DWI/DCE score: *([1-5])/.{1,5}/[+\-xX]",
+        r"T2W?: *([1-5])",
     ]:
         match = re.search(pattern, report_snippet)
         if match is not None:
             score = match.group(1)
-            scores['T2W'] = score
-            scores['T2W_pattern'] = pattern
+            scores["T2W"] = score
+            scores["T2W_pattern"] = pattern
             break
 
     # extract DWI score
     for pattern in [
-        r'S?core.? DWI: *([1-5])',
-        r'T2W/DWI/DCE score: *.{1,5}/X?-?([1-5])/[+\-xX]',
-        r'DWI: *([1-5])',
+        r"S?core.? DWI: *([1-5])",
+        r"T2W/DWI/DCE score: *.{1,5}/X?-?([1-5])/[+\-xX]",
+        r"DWI: *([1-5])",
     ]:
         match = re.search(pattern, report_snippet)
         if match is not None:
             score = match.group(1)
-            scores['DWI'] = score
-            scores['DWI_pattern'] = pattern
+            scores["DWI"] = score
+            scores["DWI_pattern"] = pattern
             break
 
     # extract DCE score
     for pattern in [
-        r'S?core.? DCE: *\.?([+\-])',
-        r'T2W/DWI/DCE score: *.{1,5}/.{1,5}/([+\-])',
-        r'DCE: *([+-])',
+        r"S?core.? DCE: *\.?([+\-])",
+        r"T2W/DWI/DCE score: *.{1,5}/.{1,5}/([+\-])",
+        r"DCE: *([+-])",
     ]:
         match = re.search(pattern, report_snippet)
         if match is not None:
             score = match.group(1)
-            scores['DCE'] = score
-            scores['DCE_pattern'] = pattern
+            scores["DCE"] = score
+            scores["DCE_pattern"] = pattern
             break
 
     # extract total score
     for pattern in [
-        fr'PI-?>?RADS v2 (categorie|category){allowed_separators}{PIRADS_pattern}',
-        fr'PI-?RADS{allowed_separators}{PIRADS_pattern}',
+        rf"PI-?>?RADS v2 (categorie|category){allowed_separators}{PIRADS_pattern}",
+        rf"PI-?RADS{allowed_separators}{PIRADS_pattern}",
     ]:
         match = re.search(pattern, report_snippet)
         if match is not None:
             score_tot = pirads_score_map[match.group("PIRADS")]
-            scores['tot'] = score_tot
-            scores['tot_pattern'] = pattern
+            scores["tot"] = score_tot
+            scores["tot_pattern"] = pattern
             if verbose >= 2:
                 print(f"Found {score} with {pattern} in: {report_snippet}")
             break
 
-    if scores['tot'] is None and verbose >= 2:
+    if scores["tot"] is None and verbose >= 2:
         print("tot score not found for: ", report_snippet)
-        print("="*50)
+        print("=" * 50)
 
     return scores
 
@@ -354,7 +385,7 @@ def extract_all_scores_from_full_report(
     subject_id: Optional[str] = None,
     strict: bool = False,
     aggressive: bool = False,
-    verbose: int = 1
+    verbose: int = 1,
 ) -> List[Tuple[int, Dict[str, Union[str, int, None]]]]:
     """Extract full scores from snippets like:
     Score T2W: 5, Score DCE: +, Score DWI: 5, minimale ADC waarde 507.
@@ -366,33 +397,31 @@ def extract_all_scores_from_full_report(
     """
     all_scores: List[Tuple[int, Dict[str, Union[str, int, None]]]] = []
     num = 0
-    T2W_score = r'(?P<T2W>[0-5xX-])'
-    DWI_score = r'(?P<DWI>[0-5xX\-])'
-    DCE_score = r'(?P<DCE>[+\-xX\/]+)'
+    T2W_score = r"(?P<T2W>[0-5xX-])"
+    DWI_score = r"(?P<DWI>[0-5xX\-])"
+    DCE_score = r"(?P<DCE>[+\-xX\/]+)"
 
     pattern_list = [
         # composite scores
-        fr'T2W?/DWI/DCE *(score)?:? *{T2W_score}/{DWI_score}/{DCE_score}',
-        fr'T2W?:? *{T2W_score} *[,;]? *(Score)? *DCE:? *{DCE_score} *[,;]? *(Score)? *DWI:? *{DWI_score}',
-        fr'T2W?:? *{T2W_score} *[,;]? *DWI:? *{DWI_score} *(\(?ADC waarden? *(tot)? *\d+\)?)? *[,;]? *DCE: {DCE_score}',
-
+        rf"T2W?/DWI/DCE *(score)?:? *{T2W_score}/{DWI_score}/{DCE_score}",
+        rf"T2W?:? *{T2W_score} *[,;]? *(Score)? *DCE:? *{DCE_score} *[,;]? *(Score)? *DWI:? *{DWI_score}",
+        rf"T2W?:? *{T2W_score} *[,;]? *DWI:? *{DWI_score} *(\(?ADC waarden? *(tot)? *\d+\)?)? *[,;]? *DCE: {DCE_score}",
         # match Score T2W: 5,\n Score DCE: +, \nScore DWI: 5, minimale ADC waarde 648:
-        fr'(Score)? *T2W:? *{T2W_score} *[,;]?\\\\? *\n(Score)? *DCE:? *{DCE_score} *[,;]?\\\\? *\n(Score)? *DWI:? *{DWI_score}',
-        fr'(Score)? *T2W:? *{T2W_score}{allowed_separators}(Score)? *DCE:? *{DCE_score}{allowed_separators}(Score)? *DWI:? *{DWI_score}',
-
+        rf"(Score)? *T2W:? *{T2W_score} *[,;]?\\\\? *\n(Score)? *DCE:? *{DCE_score} *[,;]?\\\\? *\n(Score)? *DWI:? *{DWI_score}",
+        rf"(Score)? *T2W:? *{T2W_score}{allowed_separators}(Score)? *DCE:? *{DCE_score}{allowed_separators}(Score)? *DWI:? *{DWI_score}",
         # edge cases:
-        fr'T2W?:? *{T2W_score} *[,;]? *(Score)? *ADC:? *{DCE_score} *[,;]? *(Score)? *DWI:? *{DWI_score}',
-        fr'T2W?:? *{T2W_score} *[,;]? *(Score)? *DWI:? *{DWI_score} *[,;]? *ADC waarden circa (\d+)[,;]? *(Score)? *DCE: *{DCE_score}',
-        fr'T2W?:? *(score)?:? *{T2W_score}[,;]? *DWI:? *{DWI_score}[,;]? *DCE:? *{DCE_score}',
-
-        fr'T2W?:? *{T2W_score},?\n?DWI:? *{DWI_score} \(ADC-waarde: \d+\)?,?\n?DCE:? *{DCE_score}',
-        fr'T2W?:? *{T2W_score},? *\n? *(Score)? ?DWI:? *{DWI_score}, de minimale ADC waarde is \d+ *,?.? *\n? *(Score)? DCE:? *{DCE_score}',
-        fr'T2W?:? *{T2W_score},? *\n? *(Score)? ?\n?DWI:? *{DWI_score}, de minimale ADC waarde is normaal.? *\n? *,? *\n?(Score)? DCE:? *{DCE_score}',
+        rf"T2W?:? *{T2W_score} *[,;]? *(Score)? *ADC:? *{DCE_score} *[,;]? *(Score)? *DWI:? *{DWI_score}",
+        rf"T2W?:? *{T2W_score} *[,;]? *(Score)? *DWI:? *{DWI_score} *[,;]? *ADC waarden circa (\d+)[,;]? *(Score)? *DCE: *{DCE_score}",
+        rf"T2W?:? *(score)?:? *{T2W_score}[,;]? *DWI:? *{DWI_score}[,;]? *DCE:? *{DCE_score}",
+        rf"T2W?:? *{T2W_score},?\n?DWI:? *{DWI_score} \(ADC-waarde: \d+\)?,?\n?DCE:? *{DCE_score}",
+        rf"T2W?:? *{T2W_score},? *\n? *(Score)? ?DWI:? *{DWI_score}, de minimale ADC waarde is \d+ *,?.? *\n? *(Score)? DCE:? *{DCE_score}",
+        rf"T2W?:? *{T2W_score},? *\n? *(Score)? ?\n?DWI:? *{DWI_score}, de minimale ADC waarde is normaal.? *\n? *,? *\n?(Score)? DCE:? *{DCE_score}",
     ]
 
     if not strict:
         pattern_list += [
-            r'T2W?:? *%s.{0,10}\n?(Score)? *DWI:? *%s.{0,100}\n?(Score)? *DCE:? *%s' % (T2W_score, DWI_score, DCE_score),
+            r"T2W?:? *%s.{0,10}\n?(Score)? *DWI:? *%s.{0,100}\n?(Score)? *DCE:? *%s"
+            % (T2W_score, DWI_score, DCE_score),
         ]
 
     for pattern in pattern_list:
@@ -402,50 +431,54 @@ def extract_all_scores_from_full_report(
             if match is None:
                 break
 
-        # matches = re.finditer(pattern, report, re.IGNORECASE)
-        # for match in matches:
+            # matches = re.finditer(pattern, report, re.IGNORECASE)
+            # for match in matches:
             scores: Dict[str, Union[str, int, None]] = {
-                'T2W': None,
-                'DWI': None,
-                'DCE': None,
-                'tot': None,
-                'T2W_pattern': None,
-                'DWI_pattern': None,
-                'DCE_pattern': None,
-                'tot_pattern': None,
+                "T2W": None,
+                "DWI": None,
+                "DCE": None,
+                "tot": None,
+                "T2W_pattern": None,
+                "DWI_pattern": None,
+                "DCE_pattern": None,
+                "tot_pattern": None,
             }
 
             # select matches
-            T2W, DWI, DCE = match.group('T2W'), match.group('DWI'), match.group('DCE')
+            T2W, DWI, DCE = match.group("T2W"), match.group("DWI"), match.group("DCE")
 
             # decide on DCE
-            if DCE == '+/-' or DCE == '-/+':
-                DCE = ''
-            elif DCE == '++':
-                DCE = '+'
-            elif DCE != '-' and DCE != '+':
+            if DCE == "+/-" or DCE == "-/+":
+                DCE = ""
+            elif DCE == "++":
+                DCE = "+"
+            elif DCE != "-" and DCE != "+":
                 print("ood dce: ", DCE)
 
             # store scores
-            scores['T2W'] = T2W
-            scores['DWI'] = DWI
-            scores['DCE'] = DCE
+            scores["T2W"] = T2W
+            scores["DWI"] = DWI
+            scores["DCE"] = DCE
 
             # store patterns
-            scores['T2W_pattern'] = scores['DWI_pattern'] = scores['DCE_pattern'] = pattern
+            scores["T2W_pattern"] = scores["DWI_pattern"] = scores["DCE_pattern"] = (
+                pattern
+            )
 
             # store
             num += 1
             all_scores += [(num, scores)]
 
             # remove snippet from report to prevent double matches
-            report = report.replace(match.group(0), '', 1)  # 1: only replace first occurrence
+            report = report.replace(
+                match.group(0), "", 1
+            )  # 1: only replace first occurrence
 
     # extract total scores
     num_tot = 0
     for pattern in [
-        fr'PI-?>?RADS v2 (categorie|category){allowed_separators}{PIRADS_pattern}',
-        fr'PI-?>?RADS{allowed_separators}{PIRADS_pattern}',
+        rf"PI-?>?RADS v2 (categorie|category){allowed_separators}{PIRADS_pattern}",
+        rf"PI-?>?RADS{allowed_separators}{PIRADS_pattern}",
     ]:
         # cross fingers the order of matches is the same
         matches = re.finditer(pattern, report)
@@ -453,16 +486,18 @@ def extract_all_scores_from_full_report(
         for match in matches:
             if num_tot < len(all_scores):
                 _, scores = all_scores[num_tot]
-                scores['tot'] = pirads_score_map[match.group("PIRADS")]
-                scores['tot_pattern'] = pattern
+                scores["tot"] = pirads_score_map[match.group("PIRADS")]
+                scores["tot_pattern"] = pattern
                 num_tot += 1
             elif verbose >= 2:
                 print("Ignoring PI-RADS match: ", match.group(0))
 
     if num_tot != len(all_scores) and not aggressive:
         # matching failed, return None
-        raise Exception(f"Matching of individual scores with resulting PI-RADS scores failed for {subject_id}, and aggressive={aggressive}" +
-                        f" (found individual scores for {len(all_scores)} lesions and total PI-RADS for {num_tot})")
+        raise Exception(
+            f"Matching of individual scores with resulting PI-RADS scores failed for {subject_id}, and aggressive={aggressive}"
+            + f" (found individual scores for {len(all_scores)} lesions and total PI-RADS for {num_tot})"
+        )
 
     if verbose >= 2:
         print("All scores from full report:", all_scores)
@@ -480,11 +515,11 @@ def remove_addendum_from_report(report: str) -> str:
     [Rest of report]
     """
     while True:
-        match_start = re.search('-*Addendum start-*', report)
-        match_stop = re.search('-*Addendum einde-*', report)
+        match_start = re.search("-*Addendum start-*", report)
+        match_stop = re.search("-*Addendum einde-*", report)
         if match_start is not None and match_stop is not None:
             # remove addendum from report by selecting the text before and after the addendum
-            report = report[:match_start.span()[0]] + report[match_stop.span()[1]:]
+            report = report[: match_start.span()[0]] + report[match_stop.span()[1] :]
         else:
             break
     return report
@@ -494,7 +529,7 @@ def remove_after(pattern: str, report: str, ignore_case: bool = True) -> str:
     match = re.search(pattern, report, (re.IGNORECASE if ignore_case else 0))
     if match is not None:
         # remove part from report by selecting the text before
-        report = report[:match.span()[0]]
+        report = report[: match.span()[0]]
 
     return report
 
@@ -512,5 +547,15 @@ def remove_conclusion_from_report(report: str) -> str:
 
 allowed_separators = r"[,;:\n ]*"
 PIRADS_pattern = "(?P<PIRADS>[1-5]|een|twee|drie|vier|vijf)"
-pirads_score_map = {'1': 1, '2': 2, '3': 3, '4': 4, '5': 5,
-                    'een': 1, 'twee': 2, 'drie': 3, 'vier': 4, 'vijf': 5}
+pirads_score_map = {
+    "1": 1,
+    "2": 2,
+    "3": 3,
+    "4": 4,
+    "5": 5,
+    "een": 1,
+    "twee": 2,
+    "drie": 3,
+    "vier": 4,
+    "vijf": 5,
+}

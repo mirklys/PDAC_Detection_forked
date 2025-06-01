@@ -10,7 +10,7 @@ def test_example_script():
     num_lesions_to_retain_map = {}
 
     for fn in os.listdir(path_to_reports):
-        if '.txt' not in fn:
+        if ".txt" not in fn:
             print(f"Skipped {fn}, not a repot?")
             continue
 
@@ -19,14 +19,14 @@ def test_example_script():
             report = fp.read()
 
         # extract PI-RADS scores from radiology report
-        scores = extract_pirads_scores(
-            report=report
-        )
+        scores = extract_pirads_scores(report=report)
 
         # count number of PI-RADS >= 4 lesions
-        pirads_scores = [int(lesion_scores['tot'])
-                         for (lesion_id, lesion_scores) in scores
-                         if lesion_scores['tot'] is not None]
+        pirads_scores = [
+            int(lesion_scores["tot"])
+            for (lesion_id, lesion_scores) in scores
+            if lesion_scores["tot"] is not None
+        ]
         num_pirads_45 = sum([score >= 4 for score in pirads_scores])
 
         # store number of clinically significant report findings
@@ -34,7 +34,9 @@ def test_example_script():
         num_lesions_to_retain_map[softmax_fn] = num_pirads_45
 
     # save number of lesion candidates to retain
-    with open(os.path.join(path_to_softmax, "num_lesions_to_retain_map.json"), "w") as fp:
+    with open(
+        os.path.join(path_to_softmax, "num_lesions_to_retain_map.json"), "w"
+    ) as fp:
         json.dump(num_lesions_to_retain_map, fp, indent=4)
 
     with open(os.path.join(path_to_softmax, "num_lesions_to_retain_map.json")) as fp:
@@ -43,5 +45,5 @@ def test_example_script():
     assert num_lesions_to_retain_map == {
         "sample_1.nii.gz": 1,
         "sample_2.nii.gz": 2,
-        "sample_3.nii.gz": 1
+        "sample_3.nii.gz": 1,
     }

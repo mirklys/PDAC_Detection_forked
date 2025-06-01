@@ -29,7 +29,9 @@ def get_identifiers_from_splitted_dataset_folder(folder: str, file_ending: str):
     return files
 
 
-def create_lists_from_splitted_dataset_folder(folder: str, file_ending: str, identifiers: List[str] = None) -> List[List[str]]:
+def create_lists_from_splitted_dataset_folder(
+    folder: str, file_ending: str, identifiers: List[str] = None
+) -> List[List[str]]:
     """
     does not rely on dataset.json
     """

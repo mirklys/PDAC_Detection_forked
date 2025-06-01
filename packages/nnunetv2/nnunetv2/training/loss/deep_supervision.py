@@ -16,7 +16,9 @@ class DeepSupervisionWrapper(nn.Module):
 
     def forward(self, *args):
         for i in args:
-            assert isinstance(i, (tuple, list)), "all args must be either tuple or list, got %s" % type(i)
+            assert isinstance(
+                i, (tuple, list)
+            ), "all args must be either tuple or list, got %s" % type(i)
             # we could check for equal lengths here as well but we really shouldn't overdo it with checks because
             # this code is executed a lot of times!
 

@@ -1,13 +1,27 @@
 import torch
-from nnunetv2.training.loss.dice import SoftDiceLoss, MemoryEfficientSoftDiceLoss, MemoryEfficientSoftTverskyLoss
+from nnunetv2.training.loss.dice import (
+    SoftDiceLoss,
+    MemoryEfficientSoftDiceLoss,
+    MemoryEfficientSoftTverskyLoss,
+)
 from nnunetv2.training.loss.robust_ce_loss import RobustCrossEntropyLoss, TopKLoss
 from nnunetv2.utilities.helpers import softmax_helper_dim1
 from torch import nn
 
 
 class Panorama_loss(nn.Module):
-    def __init__(self, soft_dice_kwargs, soft_tversky_kwargs, ce_kwargs, weight_ce=1, weight_dice=1, weight_tversky=1, ignore_label=None,
-                 dice_class1=MemoryEfficientSoftDiceLoss, dice_class2=MemoryEfficientSoftTverskyLoss):
+    def __init__(
+        self,
+        soft_dice_kwargs,
+        soft_tversky_kwargs,
+        ce_kwargs,
+        weight_ce=1,
+        weight_dice=1,
+        weight_tversky=1,
+        ignore_label=None,
+        dice_class1=MemoryEfficientSoftDiceLoss,
+        dice_class2=MemoryEfficientSoftTverskyLoss,
+    ):
         super(Panorama_loss, self).__init__()
         self.weight_tversky = weight_tversky
         self.weight_ce = weight_ce
@@ -29,19 +43,28 @@ class Panorama_loss(nn.Module):
         mask2 = ~torch.isin(target, torch.tensor([2, 3, 4, 5, 6]).cuda()).bool()
         target_tv = torch.clone(target)
         target_tv[~mask2] = 0
-        tv_loss = self.tv(net_output, target_tv, loss_mask=mask2) 
+        tv_loss = self.tv(net_output, target_tv, loss_mask=mask2)
 
         # compute CE loss for all
         ce_loss = self.ce(net_output, target[:, 0].long())
-        result = self.weight_ce * ce_loss \
-                 + self.weight_dice * dc_loss \
-                 + self.weight_tversky * tv_loss
+        result = (
+            self.weight_ce * ce_loss
+            + self.weight_dice * dc_loss
+            + self.weight_tversky * tv_loss
+        )
         return result
-      
+
 
 class DC_and_CE_loss(nn.Module):
-    def __init__(self, soft_dice_kwargs, ce_kwargs, weight_ce=1, weight_dice=1, ignore_label=None,
-                 dice_class=SoftDiceLoss):
+    def __init__(
+        self,
+        soft_dice_kwargs,
+        ce_kwargs,
+        weight_ce=1,
+        weight_dice=1,
+        ignore_label=None,
+        dice_class=SoftDiceLoss,
+    ):
         """
         Weights for CE and Dice do not need to sum to one. You can set whatever you want.
         :param soft_dice_kwargs:
@@ -53,7 +76,7 @@ class DC_and_CE_loss(nn.Module):
         """
         super(DC_and_CE_loss, self).__init__()
         if ignore_label is not None:
-            ce_kwargs['ignore_index'] = ignore_label
+            ce_kwargs["ignore_index"] = ignore_label
 
         self.weight_dice = weight_dice
         self.weight_ce = weight_ce
@@ -70,8 +93,10 @@ class DC_and_CE_loss(nn.Module):
         :return:
         """
         if self.ignore_label is not None:
-            assert target.shape[1] == 1, 'ignore label is not implemented for one hot encoded target variables ' \
-                                         '(DC_and_CE_loss)'
+            assert target.shape[1] == 1, (
+                "ignore label is not implemented for one hot encoded target variables "
+                "(DC_and_CE_loss)"
+            )
             mask = (target != self.ignore_label).bool()
             # remove ignore label from target, replace with one of the known labels. It doesn't matter because we
             # ignore gradients in those areas anyway
@@ -82,18 +107,31 @@ class DC_and_CE_loss(nn.Module):
             target_dice = target
             mask = None
 
-        dc_loss = self.dc(net_output, target_dice, loss_mask=mask) \
-            if self.weight_dice != 0 else 0
-        ce_loss = self.ce(net_output, target[:, 0].long()) \
-            if self.weight_ce != 0 and (self.ignore_label is None or num_fg > 0) else 0
+        dc_loss = (
+            self.dc(net_output, target_dice, loss_mask=mask)
+            if self.weight_dice != 0
+            else 0
+        )
+        ce_loss = (
+            self.ce(net_output, target[:, 0].long())
+            if self.weight_ce != 0 and (self.ignore_label is None or num_fg > 0)
+            else 0
+        )
 
         result = self.weight_ce * ce_loss + self.weight_dice * dc_loss
         return result
 
 
 class Tversky_and_CE_loss(nn.Module):
-    def __init__(self, soft_tversky_kwargs, ce_kwargs, weight_ce=1, weight_tversky=1, ignore_label=None,
-                 dice_class=MemoryEfficientSoftTverskyLoss):
+    def __init__(
+        self,
+        soft_tversky_kwargs,
+        ce_kwargs,
+        weight_ce=1,
+        weight_tversky=1,
+        ignore_label=None,
+        dice_class=MemoryEfficientSoftTverskyLoss,
+    ):
         """
         Weights for CE and Tversky do not need to sum to one. You can set whatever you want.
         :param soft_tversky_kwargs:
@@ -105,7 +143,7 @@ class Tversky_and_CE_loss(nn.Module):
         """
         super(Tversky_and_CE_loss, self).__init__()
         if ignore_label is not None:
-            ce_kwargs['ignore_index'] = ignore_label
+            ce_kwargs["ignore_index"] = ignore_label
 
         self.weight_tversky = weight_tversky
         self.weight_ce = weight_ce
@@ -116,8 +154,10 @@ class Tversky_and_CE_loss(nn.Module):
 
     def forward(self, net_output: torch.Tensor, target: torch.Tensor):
         if self.ignore_label is not None:
-            assert target.shape[1] == 1, 'ignore label is not implemented for one hot encoded target variables ' \
-                                         '(DC_and_CE_loss)'
+            assert target.shape[1] == 1, (
+                "ignore label is not implemented for one hot encoded target variables "
+                "(DC_and_CE_loss)"
+            )
             mask = (target != self.ignore_label).bool()
             target_dice = torch.clone(target)
             target_dice[target == self.ignore_label] = 0
@@ -125,18 +165,31 @@ class Tversky_and_CE_loss(nn.Module):
         else:
             target_dice = target
             mask = None
-        tversky_loss = self.tv(net_output, target_dice, loss_mask=mask) \
-            if self.weight_tversky != 0 else 0
-        ce_loss = self.ce(net_output, target[:, 0].long()) \
-            if self.weight_ce != 0 and (self.ignore_label is None or num_fg > 0) else 0
+        tversky_loss = (
+            self.tv(net_output, target_dice, loss_mask=mask)
+            if self.weight_tversky != 0
+            else 0
+        )
+        ce_loss = (
+            self.ce(net_output, target[:, 0].long())
+            if self.weight_ce != 0 and (self.ignore_label is None or num_fg > 0)
+            else 0
+        )
 
         result = self.weight_ce * ce_loss + self.weight_tversky * tversky_loss
         return result
 
 
 class DC_and_BCE_loss(nn.Module):
-    def __init__(self, bce_kwargs, soft_dice_kwargs, weight_ce=1, weight_dice=1, use_ignore_label: bool = False,
-                 dice_class=MemoryEfficientSoftDiceLoss):
+    def __init__(
+        self,
+        bce_kwargs,
+        soft_dice_kwargs,
+        weight_ce=1,
+        weight_dice=1,
+        use_ignore_label: bool = False,
+        dice_class=MemoryEfficientSoftDiceLoss,
+    ):
         """
         DO NOT APPLY NONLINEARITY IN YOUR NETWORK!
 
@@ -149,7 +202,7 @@ class DC_and_BCE_loss(nn.Module):
         """
         super(DC_and_BCE_loss, self).__init__()
         if use_ignore_label:
-            bce_kwargs['reduction'] = 'none'
+            bce_kwargs["reduction"] = "none"
 
         self.weight_dice = weight_dice
         self.weight_ce = weight_ce
@@ -170,7 +223,9 @@ class DC_and_BCE_loss(nn.Module):
 
         dc_loss = self.dc(net_output, target_regions, loss_mask=mask)
         if mask is not None:
-            ce_loss = (self.ce(net_output, target_regions) * mask).sum() / torch.clip(mask.sum(), min=1e-8)
+            ce_loss = (self.ce(net_output, target_regions) * mask).sum() / torch.clip(
+                mask.sum(), min=1e-8
+            )
         else:
             ce_loss = self.ce(net_output, target_regions)
         result = self.weight_ce * ce_loss + self.weight_dice * dc_loss
@@ -178,7 +233,9 @@ class DC_and_BCE_loss(nn.Module):
 
 
 class DC_and_topk_loss(nn.Module):
-    def __init__(self, soft_dice_kwargs, ce_kwargs, weight_ce=1, weight_dice=1, ignore_label=None):
+    def __init__(
+        self, soft_dice_kwargs, ce_kwargs, weight_ce=1, weight_dice=1, ignore_label=None
+    ):
         """
         Weights for CE and Dice do not need to sum to one. You can set whatever you want.
         :param soft_dice_kwargs:
@@ -190,7 +247,7 @@ class DC_and_topk_loss(nn.Module):
         """
         super().__init__()
         if ignore_label is not None:
-            ce_kwargs['ignore_index'] = ignore_label
+            ce_kwargs["ignore_index"] = ignore_label
 
         self.weight_dice = weight_dice
         self.weight_ce = weight_ce
@@ -207,8 +264,10 @@ class DC_and_topk_loss(nn.Module):
         :return:
         """
         if self.ignore_label is not None:
-            assert target.shape[1] == 1, 'ignore label is not implemented for one hot encoded target variables ' \
-                                         '(DC_and_CE_loss)'
+            assert target.shape[1] == 1, (
+                "ignore label is not implemented for one hot encoded target variables "
+                "(DC_and_CE_loss)"
+            )
             mask = (target != self.ignore_label).bool()
             # remove ignore label from target, replace with one of the known labels. It doesn't matter because we
             # ignore gradients in those areas anyway
@@ -219,10 +278,16 @@ class DC_and_topk_loss(nn.Module):
             target_dice = target
             mask = None
 
-        dc_loss = self.dc(net_output, target_dice, loss_mask=mask) \
-            if self.weight_dice != 0 else 0
-        ce_loss = self.ce(net_output, target) \
-            if self.weight_ce != 0 and (self.ignore_label is None or num_fg > 0) else 0
+        dc_loss = (
+            self.dc(net_output, target_dice, loss_mask=mask)
+            if self.weight_dice != 0
+            else 0
+        )
+        ce_loss = (
+            self.ce(net_output, target)
+            if self.weight_ce != 0 and (self.ignore_label is None or num_fg > 0)
+            else 0
+        )
 
         result = self.weight_ce * ce_loss + self.weight_dice * dc_loss
         return result

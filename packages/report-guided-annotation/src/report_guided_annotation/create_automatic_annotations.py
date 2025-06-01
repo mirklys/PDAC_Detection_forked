@@ -8,8 +8,7 @@ import numpy as np
 import SimpleITK as sitk
 from tqdm import tqdm
 
-from report_guided_annotation.extract_lesion_candidates import \
-    extract_lesion_candidates
+from report_guided_annotation.extract_lesion_candidates import extract_lesion_candidates
 
 try:
     import numpy.typing as npt
@@ -33,7 +32,7 @@ References:
 def create_automatic_annotations_from_softmax(
     pred: "npt.NDArray[np.float64]",
     num_lesions_to_retain: int,
-    threshold: str = 'dynamic'
+    threshold: str = "dynamic",
 ) -> "Tuple[npt.NDArray[np.int_], npt.NDArray[np.float64], int]":
     """
     Create pseudo-labels from softmax prediction
@@ -49,8 +48,10 @@ def create_automatic_annotations_from_softmax(
 
     if len(pred.shape) == 4:
         # if softmax prediction is one-hot encoded, select the foreground channel
-        assert pred.shape[-1] == 2, "Pseudo-label creation requires a softmax prediction of shape (D, H, W) or " + \
-                                    f"(D, H, W, 2), with D, H and W spatial dimensions. Received shape: {pred.shape}"
+        assert pred.shape[-1] == 2, (
+            "Pseudo-label creation requires a softmax prediction of shape (D, H, W) or "
+            + f"(D, H, W, 2), with D, H and W spatial dimensions. Received shape: {pred.shape}"
+        )
         pred = pred[..., 1]
 
     """
@@ -76,11 +77,13 @@ def create_automatic_annotations_from_softmax(
     confidences = sorted(confidences, key=lambda idx_conf: idx_conf[1], reverse=True)
 
     # grab number of lesions to retain and select indices of lesions to remove
-    idx_lesions_to_remove = [idx_conf[0] for idx_conf in confidences[num_lesions_to_retain:]]
+    idx_lesions_to_remove = [
+        idx_conf[0] for idx_conf in confidences[num_lesions_to_retain:]
+    ]
 
     # set non-included lesions to zero
     for idx in idx_lesions_to_remove:
-        mask = (indexed_pred == idx)
+        mask = indexed_pred == idx
         indexed_pred[mask] = 0
 
     """
@@ -106,7 +109,7 @@ def create_automatic_annotations_from_softmax(
 def create_automatic_annotations(
     prediction_map: "Dict[str, npt.NDArray[np.float64]]",
     num_lesions_to_retain_map: Dict[str, int],
-    threshold: str = 'dynamic',
+    threshold: str = "dynamic",
     skip_if_insufficient_lesions: bool = False,
     num_workers: int = 4,
     full_return: bool = False,
@@ -164,7 +167,9 @@ def create_automatic_annotations(
             future_to_args[future] = subject_id
 
         if len(cases_num_lesions_to_retain_not_found) > 0:
-            print(f"Did not find number of lesions to retain for {len(cases_num_lesions_to_retain_not_found)} cases, skipped those.")
+            print(
+                f"Did not find number of lesions to retain for {len(cases_num_lesions_to_retain_not_found)} cases, skipped those."
+            )
 
         # process cases in parallel
         iterator = concurrent.futures.as_completed(future_to_args)
@@ -177,7 +182,9 @@ def create_automatic_annotations(
             except Exception as e:
                 print(f"Exception: {e}")
             else:
-                if skip_if_insufficient_lesions and (num_lesions_to_retain_map[subject_id] > num_lesions_annotated):
+                if skip_if_insufficient_lesions and (
+                    num_lesions_to_retain_map[subject_id] > num_lesions_annotated
+                ):
                     cases_insufficient_lesions += [subject_id]
                     continue
 
@@ -186,12 +193,20 @@ def create_automatic_annotations(
                 pseudo_labels_soft[subject_id] = lbl_soft
 
     if len(cases_insufficient_lesions) > 0:
-        print(f"Have fewer lesion candidates than target number of lesions for {len(cases_insufficient_lesions)} cases, skipped those.")
+        print(
+            f"Have fewer lesion candidates than target number of lesions for {len(cases_insufficient_lesions)} cases, skipped those."
+        )
 
     # return results
     if full_return:
         cases_automatic_label_successful = list(pseudo_labels_hard)
-        return pseudo_labels_hard, pseudo_labels_soft, cases_automatic_label_successful, cases_num_lesions_to_retain_not_found, cases_insufficient_lesions
+        return (
+            pseudo_labels_hard,
+            pseudo_labels_soft,
+            cases_automatic_label_successful,
+            cases_num_lesions_to_retain_not_found,
+            cases_insufficient_lesions,
+        )
 
     return pseudo_labels_hard, pseudo_labels_soft
 
@@ -200,7 +215,7 @@ def create_automatic_annotations_for_folder(
     input_dir: str,
     output_dir: str,
     num_lesions_to_retain_map_path: Optional[str] = None,
-    **kwargs
+    **kwargs,
 ) -> "Union[int, Tuple[npt.NDArray[np.int_], npt.NDArray[np.float64]]]":
     """
     Create automatic labels for multiple softmax predictions (with multiprocessing)
@@ -241,40 +256,55 @@ def create_automatic_annotations_for_folder(
     """
     # read number of lesion candidates to retain
     if num_lesions_to_retain_map_path is None:
-        num_lesions_to_retain_map_path = os.path.join(input_dir, "num_lesions_to_retain_map.json")
+        num_lesions_to_retain_map_path = os.path.join(
+            input_dir, "num_lesions_to_retain_map.json"
+        )
     with open(num_lesions_to_retain_map_path) as fp:
         num_lesions_to_retain_map = json.load(fp)
 
-    print(f"Found {len(num_lesions_to_retain_map)} samples in num_lesions_to_retain_map.json")
-    print(f"Here are some examples, please check if they look okay: \n{list(num_lesions_to_retain_map)[0:5]}\n")
+    print(
+        f"Found {len(num_lesions_to_retain_map)} samples in num_lesions_to_retain_map.json"
+    )
+    print(
+        f"Here are some examples, please check if they look okay: \n{list(num_lesions_to_retain_map)[0:5]}\n"
+    )
 
     # read predictions
-    for pred_fn in tqdm(num_lesions_to_retain_map, desc='Creating automatic annotations'):
+    for pred_fn in tqdm(
+        num_lesions_to_retain_map, desc="Creating automatic annotations"
+    ):
         pred, pred_itk = None, None
         pred_path = os.path.join(input_dir, pred_fn)
-        pred_fn_out = pred_fn.replace('.npy', '.nii.gz').replace('.npz', '.nii.gz')
+        pred_fn_out = pred_fn.replace(".npy", ".nii.gz").replace(".npz", ".nii.gz")
         automatic_annotation_path = os.path.join(output_dir, pred_fn_out)
         if os.path.exists(automatic_annotation_path):
             print(f"Skipping {pred_fn_out} because it already exists.")
             continue
 
-        if ('.nii.gz' in pred_fn) or ('.mha' in pred_fn) or ('.mhd' in pred_fn) or ('.nii' in pred_fn):
+        if (
+            (".nii.gz" in pred_fn)
+            or (".mha" in pred_fn)
+            or (".mhd" in pred_fn)
+            or (".nii" in pred_fn)
+        ):
             pred_itk = sitk.ReadImage(pred_path)  # any format supported by SimpleITK
             pred = sitk.GetArrayFromImage(pred_itk)
-        elif '.npy' in pred_fn:
+        elif ".npy" in pred_fn:
             pred = np.load(pred_path)  # numpy array
-        elif '.npz' in pred_fn:
-            pred = np.load(pred_path)['softmax'].astype('float32')[1]  # nnUnet format
+        elif ".npz" in pred_fn:
+            pred = np.load(pred_path)["softmax"].astype("float32")[1]  # nnUnet format
         else:
-            raise ValueError(f"Unsupported file extension for {pred_fn}! Available are: "
-                             ".nii.gz, .nii, .mha, .mhd, .npy and .npz (nnUNet format).")
+            raise ValueError(
+                f"Unsupported file extension for {pred_fn}! Available are: "
+                ".nii.gz, .nii, .mha, .mhd, .npy and .npz (nnUNet format)."
+            )
 
         # create automatic annotation
         pseudo_labels_hard, *_ = create_automatic_annotations(
             prediction_map={pred_fn: pred},  # type: ignore
             num_lesions_to_retain_map=num_lesions_to_retain_map,
             verbose=False,
-            **kwargs
+            **kwargs,
         )
 
         if pred_fn not in pseudo_labels_hard:
@@ -299,7 +329,7 @@ def write_lbl(
     lbl: "npt.NDArray[np.int_]",
     dst_path: str,
     reference_img: "Optional[sitk.Image]" = None,
-    create_parent_folder: bool = True
+    create_parent_folder: bool = True,
 ) -> None:
     """Write automatic annotation to nifti"""
     lbl_itk = sitk.GetImageFromArray(lbl.astype(np.int8), sitk.sitkInt8)

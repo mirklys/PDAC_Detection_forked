@@ -36,51 +36,59 @@ if __name__ == "__main__":
     }
 
     configurations_3d_fr_only = {
-        i: ("3d_fullres", ) for i in configurations_all if "3d_fullres" in configurations_all[i]
+        i: ("3d_fullres",)
+        for i in configurations_all
+        if "3d_fullres" in configurations_all[i]
     }
 
     configurations_3d_c_only = {
-        i: ("3d_cascade_fullres", ) for i in configurations_all if "3d_cascade_fullres" in configurations_all[i]
+        i: ("3d_cascade_fullres",)
+        for i in configurations_all
+        if "3d_cascade_fullres" in configurations_all[i]
     }
 
     configurations_3d_lr_only = {
-        i: ("3d_lowres", ) for i in configurations_all if "3d_lowres" in configurations_all[i]
+        i: ("3d_lowres",)
+        for i in configurations_all
+        if "3d_lowres" in configurations_all[i]
     }
 
     configurations_2d_only = {
-        i: ("2d", ) for i in configurations_all if "2d" in configurations_all[i]
+        i: ("2d",) for i in configurations_all if "2d" in configurations_all[i]
     }
 
     num_gpus = 1
     exclude_hosts = "-R \"select[hname!='e230-dgx2-2']\" -R \"select[hname!='e230-dgx2-1']\" -R \"select[hname!='e230-dgx1-1']\" -R \"select[hname!='e230-dgxa100-1']\" -R \"select[hname!='e230-dgxa100-2']\" -R \"select[hname!='e230-dgxa100-3']\" -R \"select[hname!='e230-dgxa100-4']\""
-    resources = "-R \"tensorcore\""
+    resources = '-R "tensorcore"'
     gpu_requirements = f"-gpu num={num_gpus}:j_exclusive=yes:gmem=33G"
     queue = "-q gpu-lowprio"
-    preamble = "-L /bin/bash \"source ~/load_env_cluster4.sh && "
-    train_command = 'nnUNet_results=/dkfz/cluster/gpu/checkpoints/OE0441/isensee/nnUNet_results_remake_release nnUNetv2_train'
+    preamble = '-L /bin/bash "source ~/load_env_cluster4.sh && '
+    train_command = "nnUNet_results=/dkfz/cluster/gpu/checkpoints/OE0441/isensee/nnUNet_results_remake_release nnUNetv2_train"
 
-    folds = (0, )
+    folds = (0,)
     # use_this = configurations_2d_only
     use_this = merge(configurations_3d_fr_only, configurations_3d_lr_only)
     # use_this = merge(use_this, configurations_3d_c_only)
 
     use_these_modules = {
-        'nnUNetTrainer': ('nnUNetPlans',),
-        'nnUNetTrainerDiceCELoss_noSmooth': ('nnUNetPlans',),
+        "nnUNetTrainer": ("nnUNetPlans",),
+        "nnUNetTrainerDiceCELoss_noSmooth": ("nnUNetPlans",),
         # 'nnUNetTrainer_DASegOrd0': ('nnUNetPlans',),
     }
 
-    additional_arguments = f'--disable_checkpointing -num_gpus {num_gpus}'  # ''
+    additional_arguments = f"--disable_checkpointing -num_gpus {num_gpus}"  # ''
 
     output_file = "/home/isensee/deleteme.txt"
-    with open(output_file, 'w') as f:
+    with open(output_file, "w") as f:
         for tr in use_these_modules.keys():
             for p in use_these_modules[tr]:
                 for dataset in use_this.keys():
                     for config in use_this[dataset]:
                         for fl in folds:
-                            command = f'bsub {exclude_hosts} {resources} {queue} {gpu_requirements} {preamble} {train_command} {dataset} {config} {fl} -tr {tr} -p {p}'
-                            if additional_arguments is not None and len(additional_arguments) > 0:
-                                command += f' {additional_arguments}'
-                            f.write(f'{command}\"\n')
-
+                            command = f"bsub {exclude_hosts} {resources} {queue} {gpu_requirements} {preamble} {train_command} {dataset} {config} {fl} -tr {tr} -p {p}"
+                            if (
+                                additional_arguments is not None
+                                and len(additional_arguments) > 0
+                            ):
+                                command += f" {additional_arguments}"
+                            f.write(f'{command}"\n')

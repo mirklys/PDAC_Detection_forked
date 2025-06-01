@@ -10,32 +10,44 @@ from skimage.transform import resize
 from nnunetv2.configuration import ANISO_THRESHOLD
 
 
-def get_do_separate_z(spacing: Union[Tuple[float, ...], List[float], np.ndarray], anisotropy_threshold=ANISO_THRESHOLD):
+def get_do_separate_z(
+    spacing: Union[Tuple[float, ...], List[float], np.ndarray],
+    anisotropy_threshold=ANISO_THRESHOLD,
+):
     do_separate_z = (np.max(spacing) / np.min(spacing)) > anisotropy_threshold
     return do_separate_z
 
 
 def get_lowres_axis(new_spacing: Union[Tuple[float, ...], List[float], np.ndarray]):
-    axis = np.where(max(new_spacing) / np.array(new_spacing) == 1)[0]  # find which axis is anisotropic
+    axis = np.where(max(new_spacing) / np.array(new_spacing) == 1)[
+        0
+    ]  # find which axis is anisotropic
     return axis
 
 
-def compute_new_shape(old_shape: Union[Tuple[int, ...], List[int], np.ndarray],
-                      old_spacing: Union[Tuple[float, ...], List[float], np.ndarray],
-                      new_spacing: Union[Tuple[float, ...], List[float], np.ndarray]) -> np.ndarray:
+def compute_new_shape(
+    old_shape: Union[Tuple[int, ...], List[int], np.ndarray],
+    old_spacing: Union[Tuple[float, ...], List[float], np.ndarray],
+    new_spacing: Union[Tuple[float, ...], List[float], np.ndarray],
+) -> np.ndarray:
     assert len(old_spacing) == len(old_shape)
     assert len(old_shape) == len(new_spacing)
-    new_shape = np.array([int(round(i / j * k)) for i, j, k in zip(old_spacing, new_spacing, old_shape)])
+    new_shape = np.array(
+        [int(round(i / j * k)) for i, j, k in zip(old_spacing, new_spacing, old_shape)]
+    )
     return new_shape
 
 
-def resample_data_or_seg_to_spacing(data: np.ndarray,
-                                    current_spacing: Union[Tuple[float, ...], List[float], np.ndarray],
-                                    new_spacing: Union[Tuple[float, ...], List[float], np.ndarray],
-                                    is_seg: bool = False,
-                                    order: int = 3, order_z: int = 0,
-                                    force_separate_z: Union[bool, None] = False,
-                                    separate_z_anisotropy_threshold: float = ANISO_THRESHOLD):
+def resample_data_or_seg_to_spacing(
+    data: np.ndarray,
+    current_spacing: Union[Tuple[float, ...], List[float], np.ndarray],
+    new_spacing: Union[Tuple[float, ...], List[float], np.ndarray],
+    is_seg: bool = False,
+    order: int = 3,
+    order_z: int = 0,
+    force_separate_z: Union[bool, None] = False,
+    separate_z_anisotropy_threshold: float = ANISO_THRESHOLD,
+):
     if force_separate_z is not None:
         do_separate_z = force_separate_z
         if force_separate_z:
@@ -70,18 +82,23 @@ def resample_data_or_seg_to_spacing(data: np.ndarray,
     shape = np.array(data[0].shape)
     new_shape = compute_new_shape(shape[1:], current_spacing, new_spacing)
 
-    data_reshaped = resample_data_or_seg(data, new_shape, is_seg, axis, order, do_separate_z, order_z=order_z)
+    data_reshaped = resample_data_or_seg(
+        data, new_shape, is_seg, axis, order, do_separate_z, order_z=order_z
+    )
     return data_reshaped
 
 
-def resample_data_or_seg_to_shape(data: Union[torch.Tensor, np.ndarray],
-                                  new_shape: Union[Tuple[int, ...], List[int], np.ndarray],
-                                  current_spacing: Union[Tuple[float, ...], List[float], np.ndarray],
-                                  new_spacing: Union[Tuple[float, ...], List[float], np.ndarray],
-                                  is_seg: bool = False,
-                                  order: int = 3, order_z: int = 0,
-                                  force_separate_z: Union[bool, None] = False,
-                                  separate_z_anisotropy_threshold: float = ANISO_THRESHOLD):
+def resample_data_or_seg_to_shape(
+    data: Union[torch.Tensor, np.ndarray],
+    new_shape: Union[Tuple[int, ...], List[int], np.ndarray],
+    current_spacing: Union[Tuple[float, ...], List[float], np.ndarray],
+    new_spacing: Union[Tuple[float, ...], List[float], np.ndarray],
+    is_seg: bool = False,
+    order: int = 3,
+    order_z: int = 0,
+    force_separate_z: Union[bool, None] = False,
+    separate_z_anisotropy_threshold: float = ANISO_THRESHOLD,
+):
     """
     needed for segmentation export. Stupid, I know. Maybe we can fix that with Leos new resampling functions
     """
@@ -118,13 +135,21 @@ def resample_data_or_seg_to_shape(data: Union[torch.Tensor, np.ndarray],
     if data is not None:
         assert len(data.shape) == 4, "data must be c x y z"
 
-    data_reshaped = resample_data_or_seg(data, new_shape, is_seg, axis, order, do_separate_z, order_z=order_z)
+    data_reshaped = resample_data_or_seg(
+        data, new_shape, is_seg, axis, order, do_separate_z, order_z=order_z
+    )
     return data_reshaped
 
 
-def resample_data_or_seg(data: np.ndarray, new_shape: Union[Tuple[float, ...], List[float], np.ndarray],
-                         is_seg: bool = False, axis: Union[None, int] = None, order: int = 3,
-                         do_separate_z: bool = False, order_z: int = 0):
+def resample_data_or_seg(
+    data: np.ndarray,
+    new_shape: Union[Tuple[float, ...], List[float], np.ndarray],
+    is_seg: bool = False,
+    axis: Union[None, int] = None,
+    order: int = 3,
+    do_separate_z: bool = False,
+    order_z: int = 0,
+):
     """
     separate_z=True will resample with order 0 along z
     :param data:
@@ -144,7 +169,7 @@ def resample_data_or_seg(data: np.ndarray, new_shape: Union[Tuple[float, ...], L
         kwargs = OrderedDict()
     else:
         resize_fn = resize
-        kwargs = {'mode': 'edge', 'anti_aliasing': False}
+        kwargs = {"mode": "edge", "anti_aliasing": False}
     dtype_data = data.dtype
     shape = np.array(data[0].shape)
     new_shape = np.array(new_shape)
@@ -166,11 +191,21 @@ def resample_data_or_seg(data: np.ndarray, new_shape: Union[Tuple[float, ...], L
                 reshaped_data = []
                 for slice_id in range(shape[axis]):
                     if axis == 0:
-                        reshaped_data.append(resize_fn(data[c, slice_id], new_shape_2d, order, **kwargs))
+                        reshaped_data.append(
+                            resize_fn(data[c, slice_id], new_shape_2d, order, **kwargs)
+                        )
                     elif axis == 1:
-                        reshaped_data.append(resize_fn(data[c, :, slice_id], new_shape_2d, order, **kwargs))
+                        reshaped_data.append(
+                            resize_fn(
+                                data[c, :, slice_id], new_shape_2d, order, **kwargs
+                            )
+                        )
                     else:
-                        reshaped_data.append(resize_fn(data[c, :, :, slice_id], new_shape_2d, order, **kwargs))
+                        reshaped_data.append(
+                            resize_fn(
+                                data[c, :, :, slice_id], new_shape_2d, order, **kwargs
+                            )
+                        )
                 reshaped_data = np.stack(reshaped_data, axis)
                 if shape[axis] != new_shape[axis]:
 
@@ -189,16 +224,26 @@ def resample_data_or_seg(data: np.ndarray, new_shape: Union[Tuple[float, ...], L
 
                     coord_map = np.array([map_rows, map_cols, map_dims])
                     if not is_seg or order_z == 0:
-                        reshaped_final_data.append(map_coordinates(reshaped_data, coord_map, order=order_z,
-                                                                   mode='nearest')[None])
+                        reshaped_final_data.append(
+                            map_coordinates(
+                                reshaped_data, coord_map, order=order_z, mode="nearest"
+                            )[None]
+                        )
                     else:
-                        unique_labels = np.sort(pd.unique(reshaped_data.ravel()))  # np.unique(reshaped_data)
+                        unique_labels = np.sort(
+                            pd.unique(reshaped_data.ravel())
+                        )  # np.unique(reshaped_data)
                         reshaped = np.zeros(new_shape, dtype=dtype_data)
 
                         for i, cl in enumerate(unique_labels):
                             reshaped_multihot = np.round(
-                                map_coordinates((reshaped_data == cl).astype(float), coord_map, order=order_z,
-                                                mode='nearest'))
+                                map_coordinates(
+                                    (reshaped_data == cl).astype(float),
+                                    coord_map,
+                                    order=order_z,
+                                    mode="nearest",
+                                )
+                            )
                             reshaped[reshaped_multihot > 0.5] = cl
                         reshaped_final_data.append(reshaped[None])
                 else:
